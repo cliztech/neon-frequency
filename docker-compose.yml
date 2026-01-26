@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # THE TRANSMITTER (Icecast2)
+  icecast:
+    image: infiniteproject/icecast
+    ports:
+      - "8000:8000"
+    environment:
+      - ICECAST_SOURCE_PASSWORD=hackme
+      - ICECAST_ADMIN_PASSWORD=hackme
+      - ICECAST_PASSWORD=hackme
+      - ICECAST_RELAY_PASSWORD=hackme
+    networks:
+      - radio-net
+
+  # THE DECK (Liquidsoap)
+  liquidsoap:
+    image: savonet/liquidsoap:v2.2.5
+    volumes:
+      - ./broadcast/liquidsoap:/etc/liquidsoap
+      - ./music:/music
+    ports:
+      - "1234:1234" # Telnet Control Port
+    command: liquidsoap /etc/liquidsoap/radio.liq
+    depends_on:
+      - icecast
+    networks:
+      - radio-net
+
+networks:
+  radio-net:

@@ -1,0 +1,7 @@
+langgraph
+langchain-google-genai
+pydantic
+telnetlib3
+python-dotenv
+supabase
+elevenlabs
