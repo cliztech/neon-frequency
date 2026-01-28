@@ -32,7 +32,7 @@ class TrendWatcher:
                 logger.error(f"Failed to initialize Google Search: {e}")
 
     def get_current_trends(self) -> str:
-        """Simulates fetching real-time trends."""
+        """Fetches real-time trends from Google Search, with a fallback to simulated trends."""
         if self.search_tool:
             try:
                 result = self.search_tool.run("top pop culture trends today")
