@@ -1,9 +1,14 @@
 import logging
 import random
+import os
 from typing import List, Dict
 
-# In a real scenario, we would use:
-# from langchain_community.tools import GoogleSearchRun
+try:
+    from langchain_community.utilities import GoogleSearchAPIWrapper
+    from langchain_community.tools import GoogleSearchRun
+    HAS_LANGCHAIN = True
+except ImportError:
+    HAS_LANGCHAIN = False
 
 logger = logging.getLogger("AEN.Skills")
 
@@ -18,10 +23,25 @@ class TrendWatcher:
             "The weather in Sector 7G",
             "Retro-gaming soundtracks"
         ]
+        self.search_tool = None
+        if HAS_LANGCHAIN and os.environ.get("GOOGLE_API_KEY") and os.environ.get("GOOGLE_CSE_ID"):
+            try:
+                wrapper = GoogleSearchAPIWrapper()
+                self.search_tool = GoogleSearchRun(api_wrapper=wrapper)
+            except Exception as e:
+                logger.error(f"Failed to initialize Google Search: {e}")
 
     def get_current_trends(self) -> str:
         """Simulates fetching real-time trends."""
-        # TODO: Implement real Perplexity/Google Search here
+        if self.search_tool:
+            try:
+                result = self.search_tool.run("top pop culture trends today")
+                logger.info(f"Real trend detected via Google: {result[:100]}...")
+                return result
+            except Exception as e:
+                logger.error(f"Search failed: {e}")
+
+        # Fallback to simulated trends
         trend = random.choice(self.trends)
         logger.info(f"Trend detected: {trend}")
         return trend

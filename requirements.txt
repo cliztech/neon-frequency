@@ -5,3 +5,5 @@ telnetlib3
 python-dotenv
 supabase
 elevenlabs
+langchain-community
+google-api-python-client
