@@ -52,5 +52,15 @@
   - Returns potential duplicates with similarity scores and match rationale.
 - `POST /api/library/search`
   - Accepts a complex filter object for advanced queries (AND/OR groups, ranges, and tags).
+  - **Example Payload:**
+    ```json
+    {
+      "operator": "AND",
+      "filters": [
+        { "field": "genre", "operator": "eq", "value": "Rock" },
+        { "field": "year", "operator": "gte", "value": 2000 }
+      ]
+    }
+    ```
 - `GET /api/library/artists`
   - Returns distinct artists with optional `q` and pagination to support filter UI.
