@@ -85,7 +85,7 @@ Skills are defined in `skills.md`. Each agent is mapped to the closest listed ca
 - **Data sources:** safety policy list, decision logs.
 - **Skills mapping:** **None** (no compliance skill in `skills.md`).
 - **Failure modes + fallback:**
-  - If logging fails → write to local buffer and notify Showrunner; keep safe-mode playback if compliance is blocked.
+  - If logging fails → write to local buffer and notify Showrunner; switch to safe-mode playback if logging is required for compliance.
   - If storage is unavailable → mirror logs to secondary store and tag as provisional.
 
 ## Commands Mapping
