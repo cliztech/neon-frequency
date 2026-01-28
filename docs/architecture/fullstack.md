@@ -36,7 +36,7 @@
 1. **Scheduler** produces the hour clock and emits a playlist with timings.
 2. **Playout orchestration** pulls audio from object storage and validates metadata/compliance.
 3. **Agent runtime** generates dynamic segments (voice, promos, bumpers) and stores outputs.
-4. **Orchestration** sequences audio, handles crossfades, and triggers Icecast/Liquidsoap.
+4. **Playout orchestration** sequences audio, handles crossfades, and triggers Icecast/Liquidsoap.
 5. **Event bus** broadcasts now-playing, transitions, and errors to APIs and WebSocket clients.
 6. **Logging/compliance** writes immutable logs to Postgres and long-term archives.
 7. **Studio UI** receives live updates and displays the current hour timeline.
