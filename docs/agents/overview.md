@@ -26,7 +26,7 @@ Skills are defined in `skills.md`. Each agent is mapped to the closest listed ca
 - **Skills mapping:** **None** (no interview skill in `skills.md`).
 - **Failure modes + fallback:**
   - If prompts stall or transcript lags → insert a neutral wrap-up prompt and hand control back to Scheduler for dead air prevention.
-  - If guest data missing → default to evergreen questions and shorten the segment.
+  - If guest data is missing → default to evergreen questions and shorten the segment.
 
 ### Voice Director
 - **Inputs:** voice track, music bed levels, segment transitions.
