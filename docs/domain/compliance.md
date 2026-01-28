@@ -3,7 +3,7 @@
 ## Required Logs
 - Song plays
 - Ad impressions and skips
-- Metadata changes (track, artist, album, licensing, rights)
+- All changes (creations, updates, deletions) to metadata (track, artist, album, licensing, rights)
 - Time stamps for all logged events (UTC)
 
 ## Retention and Export
