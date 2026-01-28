@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { TrackChannel } from '../core/TrackChannel';
 import { MicOff, Headphones } from 'lucide-react';
 import MeterDisplay from './MeterDisplay';
@@ -8,6 +9,9 @@ interface ChannelStripProps {
 
 export default function ChannelStrip({ track }: ChannelStripProps) {
     // Simple state-less simulation for now, w/ direct mutations
+
+    const handleToggleMute = useCallback(() => track.toggleMute(!track.isMuted()), [track]);
+    const handleToggleSolo = useCallback(() => track.toggleSolo(!track.isSoloed()), [track]);
 
     return (
         <div className="w-24 h-96 bg-zinc-900 border-r border-zinc-800 flex flex-col p-2 gap-4">
@@ -40,13 +44,13 @@ export default function ChannelStrip({ track }: ChannelStripProps) {
             {/* Controls */}
             <div className="flex gap-1 justify-center">
                 <button
-                    onClick={() => track.toggleMute(!track.isMuted())}
+                    onClick={handleToggleMute}
                     className="w-6 h-6 rounded bg-zinc-800 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 flex items-center justify-center transition-colors"
                 >
                     <MicOff className="w-3 h-3" />
                 </button>
                 <button
-                    onClick={() => track.toggleSolo(!track.isSoloed())}
+                    onClick={handleToggleSolo}
                     className="w-6 h-6 rounded bg-zinc-800 text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10 flex items-center justify-center transition-colors"
                 >
                     <Headphones className="w-3 h-3" />

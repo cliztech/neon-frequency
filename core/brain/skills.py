@@ -1,5 +1,7 @@
 import logging
 import random
+import os
+import httpx
 from typing import List, Dict
 
 # In a real scenario, we would use:
@@ -36,7 +38,31 @@ class WeatherStation:
     
     @staticmethod
     async def get_weather(location: str = "Rowville") -> str:
-        # TODO: Connect to OpenWeatherMap
+        api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+
+        if api_key:
+            try:
+                # Use httpx for async request
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f"https://api.openweathermap.org/data/2.5/weather",
+                        params={"q": location, "appid": api_key, "units": "metric"},
+                        timeout=5.0
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+
+                temp = data["main"]["temp"]
+                # Capitalize first letter of description for better readability
+                description = data["weather"][0]["description"].capitalize()
+                return f"{temp}°C, {description}"
+
+            except Exception as e:
+                logger.error(f"Failed to fetch weather data: {e}")
+        else:
+            logger.warning("OPENWEATHERMAP_API_KEY not found. Using random fallback data.")
+
+        # Fallback to random data
         temp = random.randint(30, 42)
         conditions = ["Sunny", "Heatwave", "Stormy", "Neon Rain"]
         return f"{temp}°C, {random.choice(conditions)}"

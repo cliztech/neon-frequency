@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import TypedDict, Dict
 
 logger = logging.getLogger("AEN.Greg")
@@ -28,5 +29,4 @@ class GregPersona:
             f"I heard you say '{host_last_words}'... cringe."
         ]
         
-        import random
         return random.choice(roasts)
