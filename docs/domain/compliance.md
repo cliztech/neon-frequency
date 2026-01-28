@@ -17,5 +17,5 @@
 
 ## API Endpoints
 - `GET /api/compliance/logs` for querying logs with filters (date range, event type, track/artist, ad campaign).
-- `POST /api/compliance/logs/export` for requesting exports in CSV or JSON.
+- `POST /api/compliance/logs/export` for requesting exports. The format (CSV or JSON) and log filters should be specified in the request body.
 - `GET /api/compliance/logs/exports/{exportId}` for retrieving export status and download links.
