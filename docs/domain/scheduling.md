@@ -133,7 +133,7 @@ selects the next eligible new release. If no eligible items remain, fallback to 
 - **name** (string)
 - **start_time** (time)
 - **end_time** (time)
-- **timezone** (string)
+- **timezone** (string, e.g., 'America/New_York'. Defines the timezone for start/end times.)
 
 ### breaks
 - **id** (PK, UUID)
