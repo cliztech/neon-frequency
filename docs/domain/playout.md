@@ -108,7 +108,7 @@ radio = silence(safe)
 ### Backtiming and overrides
 ```liquidsoap
 # Example: apply time-stretch when behind schedule
-music_backtimed = stretch(max_ratio = 1.06, on_clock = true, music)
+music_backtimed = stretch(max_ratio = 1.06, sync = true, music)
 
 # Manual override switch
 manual_override = input.harbor("assist")
