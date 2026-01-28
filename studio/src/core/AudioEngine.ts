@@ -31,7 +31,6 @@ class AudioEngine {
         if (this.isInitialized) return;
 
         await Tone.start();
-        console.log("Ultrathink Audio Engine: STARTED");
 
         Tone.Transport.bpm.value = 128;
         this.isInitialized = true;
