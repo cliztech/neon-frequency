@@ -37,8 +37,12 @@ async def monitor_deck(state: RadioState):
     logging.info("Scanning frequencies... Deck is active.")
     
     # Update Context
-    state["weather"] = WeatherStation.get_weather()
-    trend = trend_watcher.get_current_trends()
+    weather, trend = await asyncio.gather(
+        WeatherStation.get_weather(),
+        trend_watcher.get_current_trends()
+    )
+
+    state["weather"] = weather
     state["mood"] = f"Hype ({trend})"
     
     return state

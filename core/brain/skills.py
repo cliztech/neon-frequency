@@ -19,7 +19,7 @@ class TrendWatcher:
             "Retro-gaming soundtracks"
         ]
 
-    def get_current_trends(self) -> str:
+    async def get_current_trends(self) -> str:
         """Simulates fetching real-time trends."""
         # TODO: Implement real Perplexity/Google Search here
         trend = random.choice(self.trends)
@@ -35,7 +35,7 @@ class WeatherStation:
     """Real-time weather data."""
     
     @staticmethod
-    def get_weather(location: str = "Rowville") -> str:
+    async def get_weather(location: str = "Rowville") -> str:
         # TODO: Connect to OpenWeatherMap
         temp = random.randint(30, 42)
         conditions = ["Sunny", "Heatwave", "Stormy", "Neon Rain"]
