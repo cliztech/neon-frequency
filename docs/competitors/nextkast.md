@@ -3,7 +3,7 @@
 ## Source URLs
 - https://www.nextkast.com/
 - https://www.nextkast.com/onAir/features/
-- https://bgs.cc/content/nextKast%20OnAir%20User%20Manual.pdf
+- <https://bgs.cc/content/nextKast%20OnAir%20User%20Manual.pdf>
 
 ## Core System Architecture
 - **All-in-One Design:** Integrates Automation, Scheduler, Traffic/Billing, Remote Access, Streaming, and Audio Processing in a single installer.
