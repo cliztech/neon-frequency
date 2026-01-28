@@ -44,7 +44,19 @@
 ## Search and Filter API Endpoints
 
 - `GET /api/library/tracks`
-  - Query params: `q`, `artist`, `album`, `genre`, `year`, `bpm`, `lufs_min`, `lufs_max`, `duration_min`, `duration_max`, `has_artwork`, `source`.
+  - Query params:
+    - `q`
+    - `artist`
+    - `album`
+    - `genre`
+    - `year`
+    - `bpm`
+    - `lufs_min`
+    - `lufs_max`
+    - `duration_min`
+    - `duration_max`
+    - `has_artwork`
+    - `source`
   - Returns paginated results with sorting on `title`, `artist`, `created_at`, or `last_played`.
 - `GET /api/library/tracks/{id}`
   - Fetches a single track by ID, including metadata, loudness analysis, and asset links.
