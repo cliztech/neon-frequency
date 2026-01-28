@@ -1,14 +1,16 @@
 # Master Plan: Project "Neon Frequency"
 
 ## Phase 0: Competitive Feature Audit (Radio Automation)
-- [ ] Document feature parity vs NextKast + RoboDJ (source links, screenshots, capability notes).
+- [x] Document feature parity vs NextKast + RoboDJ (source links, screenshots, capability notes).
+- [x] Research 20+ radio automation tools (see implementation_plan.md in brain folder).
 - [ ] Map station clock concepts (hours, dayparts, rotations, sweepers, IDs, ads) into Neon Frequency scheduling model.
 - [ ] Define live-assist controls (manual override, hotkeys, instant cart, voice tracks, emergency override).
 - [ ] Specify logging + compliance needs (playout logs, ad proof, metadata history, retention policy).
 - [ ] Outline library management parity (metadata editor, duplicate detection, normalization, loudness).
-- [ ] Establish playout intelligence (auto-segue rules, crossfade profiles, energy ramps).
+- [x] Establish playout intelligence (auto-segue rules, crossfade profiles, energy ramps) - see `radio_automation.py`.
 - [ ] Identify remote control + monitoring features (web dashboard, mobile, alerts, failover).
-- [ ] Define third-party integrations (streaming servers, encoder, reporting, social posting).
+- [x] Define third-party integrations (AzuraCast, ElevenLabs, RadioDJ) - implemented in `radio_automation.py`.
+
 
 ## Phase 1: The Pulse (Core Audio)
 - [x] Infrastructure (Docker/Icecast)

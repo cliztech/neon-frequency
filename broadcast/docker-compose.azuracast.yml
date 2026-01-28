@@ -1,0 +1,66 @@
+# AzuraCast Docker Compose Configuration for Neon Frequency
+# ============================================================
+# This provides a full radio automation stack with:
+# - AzuraCast (radio automation + web interface)
+# - MariaDB (database)
+# - Redis (caching)
+# - Icecast (optional standalone stream server)
+#
+# Usage:
+#   docker compose -f docker-compose.azuracast.yml up -d
+#
+# Access:
+#   - Web UI: http://localhost:8080
+#   - Stream: http://localhost:8000/radio/8000/radio.mp3
+
+services:
+  azuracast:
+    image: ghcr.io/azuracast/azuracast:latest
+    container_name: neon_frequency_radio
+    ports:
+      - "8080:80"      # Web interface
+      - "8443:443"     # HTTPS (optional)
+      - "8000:8000"    # Icecast stream
+      - "8005:8005"    # Icecast stream (alt)
+      - "8006:8006"    # Icecast stream (alt)
+    volumes:
+      - azuracast_data:/var/azuracast/www_tmp
+      - azuracast_stations:/var/azuracast/stations
+      - azuracast_backups:/var/azuracast/backups
+    environment:
+      - LETSENCRYPT_HOST=
+      - LETSENCRYPT_EMAIL=
+    restart: unless-stopped
+    networks:
+      - neon_network
+
+  # Optional: Standalone Icecast for testing
+  icecast:
+    image: moul/icecast
+    container_name: neon_frequency_icecast
+    ports:
+      - "8001:8000"
+    environment:
+      - ICECAST_SOURCE_PASSWORD=hackme
+      - ICECAST_ADMIN_PASSWORD=hackme
+      - ICECAST_PASSWORD=hackme
+      - ICECAST_RELAY_PASSWORD=hackme
+    volumes:
+      - ./logs:/var/log/icecast2
+    restart: unless-stopped
+    networks:
+      - neon_network
+    profiles:
+      - standalone
+
+volumes:
+  azuracast_data:
+    driver: local
+  azuracast_stations:
+    driver: local
+  azuracast_backups:
+    driver: local
+
+networks:
+  neon_network:
+    driver: bridge

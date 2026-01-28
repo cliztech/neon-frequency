@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 import random
-from typing import TypedDict, List
+from typing import TypedDict, List, Optional
 from langgraph.graph import StateGraph, END
 
 # --- PATH SETUP ---
@@ -14,6 +14,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # --- IMPORTS ---
 from skills import TrendWatcher, WeatherStation
 from greg import GregPersona
+from content_engine import ContentEngine, ContentContext, ShowProducer, get_content_engine
+from radio_automation import AzuraCastClient, VoiceGenerator, PlaylistOptimizer, Track
 
 # --- SETUP ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - AEN - %(message)s')
@@ -21,6 +23,16 @@ logger = logging.getLogger("AEN.Cortex")
 
 trend_watcher = TrendWatcher()
 greg_agent = GregPersona()
+content_engine = ContentEngine()
+voice_generator = VoiceGenerator()
+show_producer = ShowProducer(content_engine)
+
+# Optional: AzuraCast integration (if configured)
+try:
+    azuracast = AzuraCastClient()
+except Exception as e:
+    logger.warning(f"AzuraCast not available: {e}")
+    azuracast = None
 
 class RadioState(TypedDict):
     current_track: str
@@ -28,7 +40,9 @@ class RadioState(TypedDict):
     weather: str
     mood: str
     history: List[str]
-    greg_interruption: str  # New field for Greg's roast
+    greg_interruption: str
+    voice_script: str  # Generated DJ script
+    voice_audio_path: Optional[str]  # Path to generated audio
 
 # --- NODES ---
 
@@ -36,12 +50,20 @@ async def monitor_deck(state: RadioState):
     """Checks station heartbeat and gathers context."""
     logging.info("Scanning frequencies... Deck is active.")
     
+    # Try to get real now playing from AzuraCast
+    if azuracast:
+        now_playing = azuracast.get_now_playing()
+        if now_playing:
+            state["current_track"] = f"{now_playing.track.artist} - {now_playing.track.title}"
+            logging.info(f"Now Playing (AzuraCast): {state['current_track']}")
+    
     # Update Context
     state["weather"] = WeatherStation.get_weather()
     trend = trend_watcher.get_current_trends()
     state["mood"] = f"Hype ({trend})"
     
     return state
+
 
 async def select_track(state: RadioState):
     """The Crate Digger."""
@@ -54,7 +76,7 @@ async def select_track(state: RadioState):
     return state
 
 async def generate_host_script(state: RadioState):
-    """The Persona Engine."""
+    """The Persona Engine - now powered by Content Engine."""
     # Check if Greg wants to interrupt (30% chance)
     if random.random() < 0.3:
         roast = greg_agent.generate_interruption(state["next_track"], "It's gonna be huge!")
@@ -63,16 +85,33 @@ async def generate_host_script(state: RadioState):
     else:
         state["greg_interruption"] = ""
 
-    prompt = f"""
-    SYSTEM: You are AEN, host of Neon Frequency.
-    CONTEXT: {state['weather']}. Mood: {state['mood']}.
-    NEXT SONG: {state['next_track']}
-    TASK: Write a 1-sentence intro.
-    """
-    logging.info("Generating voice script...")
-    script = f"It's {state['weather']} and we are riding the {state['mood']} wave! Coming up: {state['next_track']}."
-    logging.info(f"Script: {script}")
+    # Use Content Engine for AI-powered script generation
+    context = ContentContext(
+        weather=state["weather"],
+        current_track=state.get("current_track"),
+        next_track=state["next_track"],
+        mood=state["mood"]
+    )
+    
+    script = content_engine.generate_song_intro(context)
+    state["voice_script"] = script
+    logging.info(f"Generated Script: {script}")
+    
+    # Generate voice audio using ElevenLabs
+    try:
+        audio_path = f"/tmp/voice_{hash(script)}.mp3"
+        audio = voice_generator.generate_audio(script, output_path=audio_path)
+        if audio:
+            state["voice_audio_path"] = audio_path
+            logging.info(f"Voice audio generated: {audio_path}")
+        else:
+            state["voice_audio_path"] = None
+    except Exception as e:
+        logging.warning(f"Voice generation failed: {e}")
+        state["voice_audio_path"] = None
+    
     return state
+
 
 async def push_to_deck(state: RadioState):
     """Telnet Interface to Liquidsoap."""
@@ -122,8 +161,11 @@ async def main():
         "weather": "", 
         "mood": "", 
         "history": [],
-        "greg_interruption": ""
+        "greg_interruption": "",
+        "voice_script": "",
+        "voice_audio_path": None
     })
+
 
 if __name__ == "__main__":
     asyncio.run(main())
