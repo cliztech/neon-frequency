@@ -159,7 +159,7 @@ selects the next eligible new release. If no eligible items remain, fallback to 
 - **break_id** (FK → breaks.id, nullable)
 - **sweeper_id** (FK → sweepers.id, nullable)
 
-### ids
+### external_id_mappings
 - **id** (PK, UUID)
 - **entity_type** (string)
 - **entity_id** (UUID)
