@@ -11,25 +11,13 @@ from core.brain.skills import TrendWatcher
 class TestTrendWatcher(unittest.TestCase):
 
     def test_fallback_no_keys(self):
-        # Ensure no keys by patching with empty dict and verify clear=True is not needed if we want to remove specific keys,
-        # but here we want to ensure specific keys are NOT present.
-        # A safer way is to patch os.environ to exclude these keys.
-
-        # We can just patch.dict with os.environ but ensuring our target keys are popped.
-        # However, patch.dict with 'clear=True' clears everything. We might need other env vars.
-        # So we just make sure they are not there.
-
-        with patch.dict(os.environ):
-            if "GOOGLE_API_KEY" in os.environ:
-                del os.environ["GOOGLE_API_KEY"]
-            if "GOOGLE_CSE_ID" in os.environ:
-                del os.environ["GOOGLE_CSE_ID"]
-
+        """Tests that TrendWatcher falls back to simulated trends when API keys are not set."""
+        # Use patch.dict to ensure the environment is clean of the API keys for this test.
+        with patch.dict(os.environ, {}, clear=True):
             watcher = TrendWatcher()
             self.assertIsNone(watcher.search_tool)
             trend = watcher.get_current_trends()
             self.assertIn(trend, watcher.trends)
-            print(f"Fallback trend: {trend}")
 
     @patch("core.brain.skills.GoogleSearchAPIWrapper")
     @patch("core.brain.skills.GoogleSearchRun")
