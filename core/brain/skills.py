@@ -1,5 +1,6 @@
 import logging
 import random
+from functools import lru_cache
 from typing import List, Dict
 
 # In a real scenario, we would use:
@@ -19,6 +20,7 @@ class TrendWatcher:
             "Retro-gaming soundtracks"
         ]
 
+    @lru_cache(maxsize=128)
     def get_current_trends(self) -> str:
         """Simulates fetching real-time trends."""
         # TODO: Implement real Perplexity/Google Search here
