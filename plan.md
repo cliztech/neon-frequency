@@ -52,6 +52,9 @@
 - [ ] News ingestion (RSS/APIs) with scheduling blocks.
 - [ ] Ad inventory model (flights, geo/targeting, frequency caps).
 - [ ] Proof-of-play logging for ads and promos.
+- [ ] Exportable royalty reports (track plays, timestamps, territory).
+- [ ] Integration hooks for rights organizations or CSV output templates.
+- [ ] Validation for missing/incorrect metadata fields.
 
 ## Phase 6: Playout & Rendering
 - [ ] TTS rendering pipeline (per-persona voices, caching, retries).
