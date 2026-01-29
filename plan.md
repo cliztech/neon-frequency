@@ -66,6 +66,9 @@
 ## Phase 7: Monitoring, QA, & Compliance
 - [ ] Stream health checks (silence, clipping, disconnects).
 - [ ] Content QA gate (profanity, banned phrases, length, topic blocks).
+- [ ] Centralized secrets vault for API keys.
+- [ ] Key rotation policy and automated renewal for third-party services.
+- [ ] Audit logs for secret access.
 - [ ] Audit logs + retention policy controls.
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
