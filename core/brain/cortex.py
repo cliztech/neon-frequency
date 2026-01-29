@@ -13,10 +13,16 @@ from langgraph.graph import StateGraph, END
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- IMPORTS ---
-from skills import TrendWatcher, WeatherStation
+# --- IMPORTS ---
+from skills import TrendWatcher
 from greg import GregPersona
-from content_engine import ContentEngine, ContentContext, ShowProducer, get_content_engine
-from radio_automation import AzuraCastClient, VoiceGenerator, PlaylistOptimizer, Track
+from content_engine import ContentEngine, ContentContext, ShowProducer
+from radio_automation import AzuraCastClient, PlaylistOptimizer, Track
+
+# New Ralph Loop Clients
+from core.brain.weather_client import WeatherClient
+from core.brain.agents.news_agent import NewsAgent
+from core.brain.voice_generator import ElevenLabsClient
 
 # Agent Imports
 print("DEBUG: Importing Agents...")
@@ -32,17 +38,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - AEN - %(message)s'
 logger = logging.getLogger("AEN.Cortex")
 
 trend_watcher = TrendWatcher()
-greg_agent = GregPersona()
 content_engine = ContentEngine()
-voice_generator = VoiceGenerator()
 show_producer = ShowProducer(content_engine)
+
+# Initialize Real Clients
+weather_client = WeatherClient()
+news_agent = NewsAgent()
+voice_client = ElevenLabsClient()
+
+# Initialize Persona with tools
+greg_agent = GregPersona(weather_client=weather_client, news_agent=news_agent)
 
 # Initialize Specialized Agents
 crate_digger = CrateDigger()
 flow_master = FlowMaster()
 sre_sentinel = SRE_Sentinel()
 code_chemist = CodeChemist()
-# show_runner = ShowRunner()  # Requires args, init later
 talent_params = TalentParams()
 deck_master = DeckMaster()
 
@@ -62,6 +73,7 @@ class RadioState(TypedDict):
     next_track: str
     weather: str
     mood: str
+    news_headline: str  # Added news
     history: List[str]
     greg_interruption: str
     voice_script: str  # Generated DJ script
@@ -82,9 +94,13 @@ async def monitor_deck(state: RadioState):
             logging.info(f"Now Playing (AzuraCast): {state['current_track']}")
     
     # Update Context
-    state["weather"] = WeatherStation.get_weather()
+    state["weather"] = weather_client.get_weather()
     trend = trend_watcher.get_current_trends()
     state["mood"] = f"Hype ({trend})"
+    
+    # Fetch News
+    headlines = news_agent.get_top_stories(1)
+    state["news_headline"] = headlines[0] if headlines else "No news is good news."
     
     return state
 
@@ -110,11 +126,12 @@ async def generate_host_script(state: RadioState):
         state["greg_interruption"] = ""
 
     # Use Content Engine for AI-powered script generation
+    # We pass the news headline into the mood or context
     context = ContentContext(
         weather=state["weather"],
         current_track=state.get("current_track"),
         next_track=state["next_track"],
-        mood=state["mood"]
+        mood=f"{state['mood']} | News: {state['news_headline']}"
     )
     
     script = content_engine.generate_song_intro(context)
@@ -124,7 +141,7 @@ async def generate_host_script(state: RadioState):
     # Generate voice audio using ElevenLabs
     try:
         audio_path = f"/tmp/voice_{hash(script)}.mp3"
-        audio = voice_generator.generate_audio(script, output_path=audio_path)
+        audio = voice_client.generate(script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path
             logging.info(f"Voice audio generated: {audio_path}")
