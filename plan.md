@@ -66,6 +66,9 @@
 - [ ] Audit logs + retention policy controls.
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
+- [ ] Metric collection (playout latency, TTS render time, queue depth).
+- [ ] Distributed tracing across scheduler → renderer → playout.
+- [ ] Log correlation IDs for segments and audio assets.
 
 ## Phase 8: Admin & Studio UI
 - [ ] Authentication + role-based access control.
