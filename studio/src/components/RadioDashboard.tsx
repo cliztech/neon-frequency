@@ -102,6 +102,44 @@ const voicePresets = [
     },
 ];
 
+const weatherPromptTemplates = [
+    {
+        name: 'Realtime Weather Pulse',
+        detail: 'Fast hits with temps, wind, and “Forecast is looking good...” optimism.',
+    },
+    {
+        name: 'Drive-Time Wrap',
+        detail: 'Traffic-aware forecast with commute-ready phrasing.',
+    },
+    {
+        name: 'Weekend Spotlight',
+        detail: 'Leans into outdoor moments and warm transitions.',
+    },
+];
+
+const weatherVoiceAssignments = [
+    {
+        daypart: 'Morning',
+        voice: 'Nova Vale',
+        style: 'Bright, energizing',
+    },
+    {
+        daypart: 'Midday',
+        voice: 'Echo Grey',
+        style: 'Balanced, measured',
+    },
+    {
+        daypart: 'Evening',
+        voice: 'Axel Rift',
+        style: 'Conversational, crisp',
+    },
+    {
+        daypart: 'Overnight',
+        voice: 'Lyra Flux',
+        style: 'Low, intimate',
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -275,6 +313,66 @@ const RadioDashboard = () => {
                                     <p className="text-xs text-zinc-400 mt-1">{agent.persona}</p>
                                 </div>
                             ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Weather Reports" subtitle="Realtime Weather scripting + voice assignment.">
+                        <div className="space-y-4">
+                            <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Provider</p>
+                                    <span className="text-[11px] uppercase tracking-[0.3em] text-cyan-300">
+                                        Realtime Weather
+                                    </span>
+                                </div>
+                                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                                    <div className="rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-cyan-100">
+                                        National Weather Service
+                                    </div>
+                                    <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-zinc-300">
+                                        Weather API
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-gradient-to-br from-white/10 to-transparent">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Prompt Style</p>
+                                <div className="mt-3 space-y-3">
+                                    {weatherPromptTemplates.map((template) => (
+                                        <div key={template.name} className="border border-white/10 rounded-lg p-3">
+                                            <p className="text-sm font-semibold">{template.name}</p>
+                                            <p className="text-xs text-zinc-400 mt-1">{template.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Voice + Daypart</p>
+                                <div className="mt-3 space-y-2">
+                                    {weatherVoiceAssignments.map((assignment) => (
+                                        <div
+                                            key={`${assignment.daypart}-${assignment.voice}`}
+                                            className="flex items-center justify-between text-xs border border-white/10 rounded-lg px-3 py-2"
+                                        >
+                                            <span className="text-zinc-200">{assignment.daypart}</span>
+                                            <span className="text-zinc-100">{assignment.voice}</span>
+                                            <span className="text-zinc-400">{assignment.style}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-zinc-900/60">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Preview Sample</p>
+                                <p className="text-sm mt-3 text-zinc-200 leading-relaxed">
+                                    “Forecast is looking good for your afternoon window — 72° and clear skies. We’ll see a
+                                    gentle northwest breeze, so step out with confidence and catch that golden hour.”
+                                </p>
+                                <p className="text-xs text-zinc-400 mt-2">
+                                    Routed by National Weather Service · Template: Realtime Weather Pulse
+                                </p>
+                            </div>
                         </div>
                     </Panel>
 
