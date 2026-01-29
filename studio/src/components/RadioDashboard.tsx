@@ -282,8 +282,8 @@ const RadioDashboard = () => {
                         subtitle="Custom filename patterns, folder routing, and export formats with live previews."
                     >
                         <div className="grid gap-4">
-                            {outputRuleTemplates.map((template) => (
-                                <div key={template.label} className="rounded-xl border border-white/10 p-4 bg-white/5">
+                            {outputRuleTemplates.map((template, index) => (
+                                <div key={index} className="rounded-xl border border-white/10 p-4 bg-white/5">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
                                             <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
