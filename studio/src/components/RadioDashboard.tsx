@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 const agents = [
     {
@@ -102,6 +102,29 @@ const voicePresets = [
     },
 ];
 
+const promptVariables = [
+    {
+        label: 'Time of Day',
+        token: '{{time_of_day}}',
+        detail: 'Localized greeting tone based on listener timezone.',
+    },
+    {
+        label: 'Tags',
+        token: '{{tags}}',
+        detail: 'Realtime show tags or segment descriptors.',
+    },
+    {
+        label: 'Custom Text',
+        token: '{{custom_text}}',
+        detail: 'Operator-injected line for live updates.',
+    },
+    {
+        label: 'Station ID',
+        token: '{{station_id}}',
+        detail: 'Callsign or regional branding hook.',
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -141,6 +164,14 @@ const Panel = ({ title, subtitle, children }: { title: string; subtitle?: string
 );
 
 const RadioDashboard = () => {
+    const [promptDraft, setPromptDraft] = useState(
+        'Good {{time_of_day}}! You are tuned to {{station_id}} for {{tags}}. {{custom_text}}',
+    );
+
+    const handleInsertToken = (token: string) => {
+        setPromptDraft((current) => `${current} ${token}`.trim());
+    };
+
     return (
         <div className="flex flex-col h-full pointer-events-auto">
             <header className="h-16 flex items-center justify-between px-6 border-b border-white/10 bg-zinc-950/80 backdrop-blur-md">
@@ -250,6 +281,57 @@ const RadioDashboard = () => {
                             <span className="px-3 py-2 border border-white/10 rounded-full">Auto-fill open slots</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Lock host personas</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Adaptive topic radar</span>
+                        </div>
+                    </Panel>
+
+                    <Panel
+                        title="Dynamic Prompt Variables"
+                        subtitle="Quick insert menu with live preview for broadcast-ready prompts."
+                    >
+                        <div className="grid gap-4">
+                            <div className="grid gap-3">
+                                {promptVariables.map((variable) => (
+                                    <div
+                                        key={variable.token}
+                                        className="flex items-start justify-between gap-4 border border-white/10 rounded-xl p-3 bg-white/5"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-semibold">{variable.label}</p>
+                                            <p className="text-xs text-zinc-400 mt-1">{variable.detail}</p>
+                                            <code className="mt-2 inline-flex rounded-full border border-white/10 bg-black/40 px-2 py-1 text-[11px] text-cyan-200">
+                                                {variable.token}
+                                            </code>
+                                        </div>
+                                        <button
+                                            className="text-[11px] uppercase tracking-[0.3em] px-3 py-2 rounded-full border border-cyan-400/40 text-cyan-200 hover:bg-cyan-400/10"
+                                            onClick={() => handleInsertToken(variable.token)}
+                                            type="button"
+                                        >
+                                            Insert
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Live Preview</p>
+                                    <button
+                                        className="text-[11px] uppercase tracking-[0.3em] text-zinc-300 hover:text-white"
+                                        onClick={() => setPromptDraft('')}
+                                        type="button"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                                <textarea
+                                    className="w-full min-h-[120px] rounded-xl border border-white/10 bg-zinc-950/80 p-3 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+                                    value={promptDraft}
+                                    onChange={(event) => setPromptDraft(event.target.value)}
+                                />
+                                <p className="mt-3 text-xs text-zinc-400">
+                                    Preview updates instantly as you insert variables or edit the draft.
+                                </p>
+                            </div>
                         </div>
                     </Panel>
                 </main>
