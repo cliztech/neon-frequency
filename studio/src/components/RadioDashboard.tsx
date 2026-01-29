@@ -102,6 +102,29 @@ const voicePresets = [
     },
 ];
 
+const promptLibraryCategories = [
+    {
+        title: 'Artist Trivia',
+        description: 'Bite-size facts, origins, and tour highlights ready for air.',
+        count: '32 prompts',
+    },
+    {
+        title: 'Song Stories',
+        description: 'Narrative-driven intros and behind-the-track anecdotes.',
+        count: '18 prompts',
+    },
+    {
+        title: 'Promos',
+        description: 'Sponsor reads, station IDs, and launch-ready promos.',
+        count: '12 promos',
+    },
+    {
+        title: 'Weather',
+        description: 'Localized forecasts with mood-matched banter hooks.',
+        count: '7 templates',
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -250,6 +273,54 @@ const RadioDashboard = () => {
                             <span className="px-3 py-2 border border-white/10 rounded-full">Auto-fill open slots</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Lock host personas</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Adaptive topic radar</span>
+                        </div>
+                    </Panel>
+
+                    <Panel
+                        title="Prompt & Promo Library"
+                        subtitle="Curated scripting blocks for RoboDJ shows, promos, and on-air beats."
+                    >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
+                                {['All', 'Trending', 'Seasonal', 'Evergreen', 'High Priority'].map((filter) => (
+                                    <span
+                                        key={filter}
+                                        className="px-3 py-2 rounded-full border border-white/10 bg-white/5"
+                                    >
+                                        {filter}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-xs">
+                                {['Create', 'Edit', 'Archive'].map((action) => (
+                                    <button
+                                        key={action}
+                                        className="px-4 py-2 rounded-full border border-cyan-400/40 text-cyan-200 uppercase tracking-[0.2em]"
+                                    >
+                                        {action}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-5">
+                            {promptLibraryCategories.map((category) => (
+                                <div
+                                    key={category.title}
+                                    className="rounded-xl border border-white/10 bg-white/5 p-4"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-semibold">{category.title}</h3>
+                                        <span className="text-[11px] text-zinc-400">{category.count}</span>
+                                    </div>
+                                    <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
+                                        {category.description}
+                                    </p>
+                                    <div className="mt-4 text-[11px] uppercase tracking-[0.3em] text-cyan-300">
+                                        Placeholder
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </Panel>
                 </main>
