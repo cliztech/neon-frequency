@@ -41,6 +41,7 @@
 ## Phase 4: Orchestration & Scheduling
 - [ ] Implement station clock engine (hourly templates, rotations, sweepers).
 - [ ] Build daypart profiles (morning, midday, drive, late).
+- [ ] Add region/timezone aware scheduling (daypart rules per market).
 - [ ] Add rules engine (artist separation, repeats, energy curves, tempo).
 - [ ] Implement dynamic playlist generation (AI-aware segment insertion).
 - [ ] Add failover handling for missing assets and empty queues.
@@ -51,6 +52,8 @@
 - [ ] Guest persona library (voice, background, opinions, topics).
 - [ ] News ingestion (RSS/APIs) with scheduling blocks.
 - [ ] Ad inventory model (flights, geo/targeting, frequency caps).
+- [ ] Locale-specific ad targeting and content filters.
+- [ ] Multi-language persona/voice profiles with localized script templates.
 - [ ] Proof-of-play logging for ads and promos.
 
 ## Phase 6: Playout & Rendering
