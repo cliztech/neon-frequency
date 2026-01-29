@@ -12,7 +12,7 @@ from langgraph.graph import StateGraph, END
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- IMPORTS ---
-from skills import TrendWatcher, WeatherStation
+from skills import TrendWatcher, WeatherStation, GoogleWorkspace
 from greg import GregPersona
 
 # --- SETUP ---
@@ -21,6 +21,7 @@ logger = logging.getLogger("AEN.Cortex")
 
 trend_watcher = TrendWatcher()
 greg_agent = GregPersona()
+workspace_skill = GoogleWorkspace()
 
 class RadioState(TypedDict):
     current_track: str
@@ -29,6 +30,7 @@ class RadioState(TypedDict):
     mood: str
     history: List[str]
     greg_interruption: str  # New field for Greg's roast
+    schedule: str
 
 # --- NODES ---
 
@@ -38,6 +40,7 @@ async def monitor_deck(state: RadioState):
     
     # Update Context
     state["weather"] = WeatherStation.get_weather()
+    state["schedule"] = workspace_skill.get_schedule()
     trend = trend_watcher.get_current_trends()
     state["mood"] = f"Hype ({trend})"
     
@@ -66,6 +69,7 @@ async def generate_host_script(state: RadioState):
     prompt = f"""
     SYSTEM: You are AEN, host of Neon Frequency.
     CONTEXT: {state['weather']}. Mood: {state['mood']}.
+    SCHEDULE: {state['schedule']}
     NEXT SONG: {state['next_track']}
     TASK: Write a 1-sentence intro.
     """
@@ -116,13 +120,15 @@ app = workflow.compile()
 
 async def main():
     print("--- AEN CORTEX ONLINE ---")
+    logger.info("Google Workspace Extension: ACTIVE")
     await app.ainvoke({
         "current_track": "", 
         "next_track": "", 
         "weather": "", 
         "mood": "", 
         "history": [],
-        "greg_interruption": ""
+        "greg_interruption": "",
+        "schedule": ""
     })
 
 if __name__ == "__main__":
