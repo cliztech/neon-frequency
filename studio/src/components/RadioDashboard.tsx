@@ -102,6 +102,25 @@ const voicePresets = [
     },
 ];
 
+const onboardingSteps = [
+    {
+        title: 'Connect playout software',
+        detail: 'Link your automation stack to sync now/next metadata.',
+    },
+    {
+        title: 'Select voices',
+        detail: 'Choose primary hosts, backups, and fallback accents.',
+    },
+    {
+        title: 'Configure prompts',
+        detail: 'Define show rules, safety rails, and brand tone.',
+    },
+    {
+        title: 'Schedule breaks',
+        detail: 'Lock in ads, station IDs, and handoff timing.',
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -159,7 +178,37 @@ const RadioDashboard = () => {
                 </div>
             </header>
 
-            <div className="flex-1 grid grid-cols-[260px_minmax(0,1fr)_360px] gap-6 p-6 overflow-hidden">
+            <div className="flex-1 flex flex-col gap-6 p-6 overflow-hidden">
+                <Panel
+                    title="Set-Up Wizard Onboarding"
+                    subtitle="Quick Start-V2 checklist for launching your station with confidence."
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        {onboardingSteps.map((step, index) => (
+                            <div
+                                key={step.title}
+                                className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-4"
+                            >
+                                <p className="text-[11px] uppercase tracking-[0.4em] text-cyan-300">
+                                    Step {index + 1}
+                                </p>
+                                <h3 className="text-sm font-semibold mt-2">{step.title}</h3>
+                                <p className="text-xs text-zinc-400 mt-2 leading-relaxed">{step.detail}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                        <p className="text-xs text-zinc-400">
+                            Support references: <span className="text-zinc-200">Set-Up Wizard</span> ·{' '}
+                            <span className="text-zinc-200">Quick Start-V2</span>
+                        </p>
+                        <button className="px-5 py-2 rounded-full bg-cyan-400 text-black text-xs font-semibold uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(34,211,238,0.35)]">
+                            Launch Setup Wizard
+                        </button>
+                    </div>
+                </Panel>
+
+                <div className="grid grid-cols-[260px_minmax(0,1fr)_360px] gap-6 overflow-hidden">
                 <aside className="flex flex-col gap-6 overflow-y-auto pr-1">
                     <Panel title="Automation Core" subtitle="Fully autonomous orchestration stack.">
                         <div className="space-y-4">
@@ -297,6 +346,7 @@ const RadioDashboard = () => {
                         </button>
                     </Panel>
                 </aside>
+                </div>
             </div>
         </div>
     );
