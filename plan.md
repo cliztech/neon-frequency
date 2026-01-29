@@ -66,6 +66,9 @@
 - [ ] Audit logs + retention policy controls.
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
+- [ ] Experiment flags for segment templates, host styles, and rotation rules.
+- [ ] Split audiences into cohorts and measure tune-out rates.
+- [ ] Automated rollout/rollback based on KPIs.
 
 ## Phase 8: Admin & Studio UI
 - [ ] Authentication + role-based access control.
