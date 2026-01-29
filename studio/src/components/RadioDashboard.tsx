@@ -338,7 +338,7 @@ const RadioDashboard = () => {
                                         {multiVoiceSelections.map((voice) => (
                                             <div
                                                 key={voice.slot}
-                                                className={`rounded-xl border bg-gradient-to-br p-3 ${accentStyles[voice.accent]}`}
+                                                className={`rounded-xl border bg-gradient-to-br p-3 ${accentStyles[voice.accent] ?? ''}`}
                                             >
                                                 <p className="text-[11px] uppercase tracking-[0.3em] text-zinc-300">
                                                     {voice.slot}
