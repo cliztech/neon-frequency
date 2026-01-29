@@ -202,7 +202,7 @@ const RadioDashboard = () => {
                             Support references: <span className="text-zinc-200">Set-Up Wizard</span> ·{' '}
                             <span className="text-zinc-200">Quick Start-V2</span>
                         </p>
-                        <button className="px-5 py-2 rounded-full bg-cyan-400 text-black text-xs font-semibold uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(34,211,238,0.35)]">
+                        <button type="button" onClick={() => { /* TODO: Implement wizard launch logic */ }} className="px-5 py-2 rounded-full bg-cyan-400 text-black text-xs font-semibold uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(34,211,238,0.35)]">
                             Launch Setup Wizard
                         </button>
                     </div>
