@@ -73,6 +73,9 @@
 - [ ] Key rotation policy and automated renewal for third-party services.
 - [ ] Audit logs for secret access.
 - [ ] Audit logs + retention policy controls.
+- [ ] DMCA/rights takedown workflow (intake, verification, removal, audit trail).
+- [ ] Retention policy controls for audio logs + user data (configurable TTLs).
+- [ ] Consent + privacy controls for user-submitted content (upload approvals, revocation).
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
 - [ ] Experiment flags for segment templates, host styles, and rotation rules.
