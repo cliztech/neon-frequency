@@ -1,0 +1,5 @@
+confidence: 0.9
+domain: git
+id: git-convention
+response: 'Use one of: '
+trigger: when writing commit message

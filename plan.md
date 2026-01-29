@@ -17,18 +17,20 @@
 - [x] The Deck (Liquidsoap Configuration)
 - [x] The Librarian (Lyria Client + Music Library)
 
-## Phase 2: The Host (Ralph Wiggum)
-- [x] Implement Ralph Agent ("I'm a unit test!")
-- [x] Connect Real Weather API (Rowville)
+## Phase 2: The Personality (Agent)
+- [ ] Implement ElevenLabs API for Voice
+- [ ] Connect Real Weather API (Rowville)
+- [ ] Implement "Greg" Agent (Parody Hip Hop)
+- [ ] Build interview producer agent (schedule, topic discovery, guest briefs, tone selection).
+- [ ] Build voice director agent (persona consistency, voice presets, compliance rules).
+- [ ] Build content safety agent (profanity routing, age gating, policy tagging).
+- [ ] Build showrunner agent (segment pacing, ad breaks, tempo transitions).
 
-## Phase 3: The Score (Lyria RealTime)
-- [x] Python OSC Emitter
-- [x] TouchDesigner / Three.js Receiver
-- [x] Lyria RealTime Scorer
-- [x] The Deck (Liquidsoap Configuration)
-- [ ] The Librarian (Music Scanner)
-- [ ] Implement metadata normalization + loudness analysis.
-- [ ] Add library de-dupe + content quality checks.
+## Phase 3: The Hallucination (Visuals)
+- [ ] Python OSC Emitter
+- [ ] TouchDesigner / Three.js Receiver
+- [ ] Define OSC event schema (now playing, mood, intensity, alerts).
+- [ ] Implement real-time overlays (now playing, headlines, alerts).
 
 ## Phase 4: The Visuals (Hallucination)
 - [ ] Python OSC Emitter
