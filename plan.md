@@ -66,6 +66,10 @@
 - [ ] Audit logs + retention policy controls.
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
+### Reliability
+- [ ] Hot standby playout instance with automatic failover.
+- [ ] Backup/restore procedures for media library and scheduling metadata.
+- [ ] Scheduled disaster recovery drills with clear RTO/RPO targets.
 
 ## Phase 8: Admin & Studio UI
 - [ ] Authentication + role-based access control.
