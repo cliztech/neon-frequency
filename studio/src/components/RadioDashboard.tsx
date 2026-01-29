@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import PronunciationSafetyPanel from './PronunciationSafetyPanel';
+
 const agents = [
     {
         name: 'Nova Vale',
@@ -424,6 +426,8 @@ const RadioDashboard = () => {
                             ))}
                         </div>
                     </Panel>
+
+                    <PronunciationSafetyPanel />
 
                     <Panel title="Voice Design Lab" subtitle="Preset library for every station and mood.">
                         <div className="space-y-3">
