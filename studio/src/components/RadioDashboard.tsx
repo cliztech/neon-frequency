@@ -199,8 +199,8 @@ const RadioDashboard = () => {
                     </div>
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
                         <p className="text-xs text-zinc-400">
-                            Support references: <span className="text-zinc-200">Set-Up Wizard</span> ·{' '}
-                            <span className="text-zinc-200">Quick Start-V2</span>
+                            Support references: <a href="#" className="text-zinc-200 hover:underline">Set-Up Wizard</a> ·{' '}
+                            <a href="#" className="text-zinc-200 hover:underline">Quick Start-V2</a>
                         </p>
                         <button type="button" onClick={() => { /* TODO: Implement wizard launch logic */ }} className="px-5 py-2 rounded-full bg-cyan-400 text-black text-xs font-semibold uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(34,211,238,0.35)]">
                             Launch Setup Wizard
