@@ -1,3 +1,4 @@
+print("DEBUG: STARTING CORTEX...")
 import asyncio
 import telnetlib3
 import logging
@@ -18,11 +19,13 @@ from content_engine import ContentEngine, ContentContext, ShowProducer, get_cont
 from radio_automation import AzuraCastClient, VoiceGenerator, PlaylistOptimizer, Track
 
 # Agent Imports
+print("DEBUG: Importing Agents...")
 from core.brain.agents.music import CrateDigger, FlowMaster
 from core.brain.agents.operations import SRE_Sentinel
 from core.brain.agents.development import CodeChemist
 from core.brain.agents.content import ShowRunner, TalentParams
 from core.brain.agents.engineering import DeckMaster
+print("DEBUG: Agents Imported.")
 
 # --- SETUP ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - AEN - %(message)s')
@@ -39,16 +42,20 @@ crate_digger = CrateDigger()
 flow_master = FlowMaster()
 sre_sentinel = SRE_Sentinel()
 code_chemist = CodeChemist()
-show_runner = ShowRunner()
+# show_runner = ShowRunner()  # Requires args, init later
 talent_params = TalentParams()
 deck_master = DeckMaster()
 
-# Optional: AzuraCast integration (if configured)
-try:
-    azuracast = AzuraCastClient()
-except Exception as e:
-    logger.warning(f"AzuraCast not available: {e}")
-    azuracast = None
+# Global clients (lazy loaded)
+azuracast = None
+def get_azuracast():
+    global azuracast
+    if azuracast is None:
+        try:
+            azuracast = AzuraCastClient()
+        except Exception as e:
+            logger.warning(f"AzuraCast init failed: {e}")
+    return azuracast
 
 class RadioState(TypedDict):
     current_track: str
@@ -67,8 +74,9 @@ async def monitor_deck(state: RadioState):
     logging.info("Scanning frequencies... Deck is active.")
     
     # Try to get real now playing from AzuraCast
-    if azuracast:
-        now_playing = azuracast.get_now_playing()
+    ac = get_azuracast()
+    if ac:
+        now_playing = ac.get_now_playing()
         if now_playing:
             state["current_track"] = f"{now_playing.track.artist} - {now_playing.track.title}"
             logging.info(f"Now Playing (AzuraCast): {state['current_track']}")
@@ -167,7 +175,9 @@ workflow.add_edge("selector", "host")
 workflow.add_edge("host", "pusher")
 workflow.add_edge("pusher", END)
 
+print("DEBUG: Compiling Graph...")
 app = workflow.compile()
+print("DEBUG: Graph Compiled.")
 
 async def main():
     print("--- AEN CORTEX ONLINE ---")

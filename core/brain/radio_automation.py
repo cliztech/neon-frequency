@@ -6,7 +6,7 @@ AI-powered radio automation integrating with AzuraCast, ElevenLabs, and other to
 
 import os
 import logging
-import httpx
+# import httpx  <-- Moved to lazy import
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 from datetime import datetime
@@ -53,6 +53,7 @@ class AzuraCastClient:
         self.base_url = base_url or os.getenv("AZURACAST_URL", "http://localhost")
         self.api_key = api_key or os.getenv("AZURACAST_API_KEY", "")
         self.station_id = station_id
+        import httpx
         self.client = httpx.Client(
             base_url=f"{self.base_url}/api",
             headers={"X-API-Key": self.api_key} if self.api_key else {},
@@ -223,6 +224,7 @@ class VoiceGenerator:
         self.base_url = "https://api.elevenlabs.io/v1"
         self.default_voice = os.getenv("ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")  # Rachel
         
+        import httpx
         self.client = httpx.Client(
             base_url=self.base_url,
             headers={"xi-api-key": self.api_key},

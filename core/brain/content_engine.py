@@ -15,19 +15,9 @@ from functools import lru_cache
 
 logger = logging.getLogger("AEN.ContentEngine")
 
-# Try to import LLM libraries
-try:
-    from langchain_google_genai import ChatGoogleGenerativeAI
-    GEMINI_AVAILABLE = True
-except ImportError:
-    GEMINI_AVAILABLE = False
-    logger.warning("langchain-google-genai not available")
-
-try:
-    import httpx
-    HTTPX_AVAILABLE = True
-except ImportError:
-    HTTPX_AVAILABLE = False
+# Imports moved to lazy loading in methods
+GEMINI_AVAILABLE = True # Assumed true, checked in methods
+HTTPX_AVAILABLE = True
 
 
 @dataclass
@@ -172,7 +162,8 @@ class ContentEngine:
     
     def _init_llm(self):
         """Initialize the LLM backend."""
-        if GEMINI_AVAILABLE:
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
             api_key = os.getenv("GOOGLE_API_KEY")
             if api_key:
                 self.llm = ChatGoogleGenerativeAI(
@@ -181,6 +172,10 @@ class ContentEngine:
                 )
                 logger.info("Using Gemini for content generation")
                 return
+        except ImportError:
+            logger.warning("langchain-google-genai not installed")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Gemini: {e}")
         
         # Fallback to template-based generation
         logger.info("Using template-based content generation (no LLM)")

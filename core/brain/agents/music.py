@@ -1,10 +1,35 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 import logging
-from core.brain.music_library import MusicLibrary, Track, TrackMetadata, Energy
-from core.brain.radio_automation import PlaylistOptimizer
+from core.brain.music_library import MusicLibrary, TrackMetadata, Energy
+from core.brain.radio_automation import PlaylistOptimizer, Track
 
 logger = logging.getLogger(__name__)
+
+def metadata_to_track(meta: TrackMetadata) -> Track:
+    """Convert Library Metadata to Automation Track."""
+    energy_val = 0.5
+    if meta.energy:
+        # Convert Enum to 0.0-1.0 float
+        mapping = {
+            Energy.LOW: 0.2,
+            Energy.MEDIUM_LOW: 0.4,
+            Energy.MEDIUM: 0.6,
+            Energy.MEDIUM_HIGH: 0.8,
+            Energy.HIGH: 1.0
+        }
+        energy_val = mapping.get(meta.energy, 0.5)
+
+    return Track(
+        title=meta.title,
+        artist=meta.artist,
+        duration=meta.duration_seconds,
+        path=meta.file_path,
+        album=meta.album,
+        genre=meta.genre.value if meta.genre else None,
+        bpm=meta.bpm,
+        energy=energy_val
+    )
 
 @dataclass
 class CrateDigger:
@@ -27,18 +52,19 @@ class CrateDigger:
 
     def search(self, query: str) -> List[Track]:
         """Finds tracks matching a query (artist, title, genre)."""
-        return self.library.search_tracks(query)
+        results = self.library.search(query)
+        return [metadata_to_track(r) for r in results]
 
     def get_rotation_candidate(self, category: str = "general") -> Optional[Track]:
         """
         Pulls a track for a specific rotation category.
-        TODO: Implement complex rotation logic (Hot, Recurrent, Gold).
         """
-        # For now, just return a random track
         import random
         if not self.library.tracks:
             return None
-        return random.choice(list(self.library.tracks.values()))
+        # In real app, filter by category
+        meta = random.choice(list(self.library.tracks.values()))
+        return metadata_to_track(meta)
 
 @dataclass
 class FlowMaster:

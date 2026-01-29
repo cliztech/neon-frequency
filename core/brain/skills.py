@@ -1,7 +1,7 @@
 import logging
 import random
 import os
-import requests
+# import requests  <-- Moved to lazy import
 from functools import lru_cache
 from typing import List, Dict
 
@@ -44,6 +44,7 @@ class WeatherStation:
 
         if api_key:
             try:
+                import requests
                 # 5 second timeout to prevent hanging
                 response = requests.get(
                     f"https://api.openweathermap.org/data/2.5/weather",
