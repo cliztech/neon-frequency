@@ -102,6 +102,30 @@ const voicePresets = [
     },
 ];
 
+const outputRuleTemplates = [
+    {
+        label: 'Interview Recaps',
+        pattern: '{date}/{show}/{segment}_{guest}_v{version}',
+        route: '/exports/interviews/{host}/',
+        format: 'WAV + TXT',
+        preview: '/exports/interviews/Nova_Vale/2024-06-07/afterhours_recaps_Lyra_v03.wav',
+    },
+    {
+        label: 'Music Beds',
+        pattern: '{show}/{bpm}bpm/{track}_{mood}',
+        route: '/exports/music-beds/{mood}/',
+        format: 'AIFF + JSON',
+        preview: '/exports/music-beds/euphoric/Neon_Drift_128bpm_Euphoric.aiff',
+    },
+    {
+        label: 'Promo Cuts',
+        pattern: '{campaign}/{tagline}_{take}',
+        route: '/exports/promos/{campaign}/',
+        format: 'MP3 + SRT',
+        preview: '/exports/promos/Neon_Night/Neon_Night_poweredbyultra_take04.mp3',
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -250,6 +274,40 @@ const RadioDashboard = () => {
                             <span className="px-3 py-2 border border-white/10 rounded-full">Auto-fill open slots</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Lock host personas</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Adaptive topic radar</span>
+                        </div>
+                    </Panel>
+
+                    <Panel
+                        title="Organized File Saving"
+                        subtitle="Custom filename patterns, folder routing, and export formats with live previews."
+                    >
+                        <div className="grid gap-4">
+                            {outputRuleTemplates.map((template) => (
+                                <div key={template.label} className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
+                                                {template.label}
+                                            </p>
+                                            <p className="text-sm font-semibold mt-2">Pattern: {template.pattern}</p>
+                                            <p className="text-xs text-zinc-400 mt-2">
+                                                Route: {template.route} · Formats: {template.format}
+                                            </p>
+                                        </div>
+                                        <span className="text-[11px] uppercase tracking-[0.3em] text-emerald-200 bg-emerald-500/10 border border-emerald-400/30 px-2 py-1 rounded-full">
+                                            Preview
+                                        </span>
+                                    </div>
+                                    <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs text-emerald-100/90">
+                                        {template.preview}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-5 flex flex-wrap gap-3 text-xs text-zinc-400">
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Token library: date · show · host</span>
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Auto-sanitize names</span>
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Preview path renderer</span>
                         </div>
                     </Panel>
                 </main>
