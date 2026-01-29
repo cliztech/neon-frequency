@@ -73,3 +73,6 @@
 - [ ] Scheduling UI (clock builder, rotations, daypart rules).
 - [ ] Playout dashboard (now playing, upcoming, logs).
 - [ ] Host console (carts, hotkeys, voice tracking).
+- [ ] Review queue for AI scripts/segments before playout.
+- [ ] “Approve/Reject/Edit” workflow with version history.
+- [ ] Emergency kill-switch for specific personas or content types.
