@@ -64,6 +64,9 @@
 - [ ] Stream health checks (silence, clipping, disconnects).
 - [ ] Content QA gate (profanity, banned phrases, length, topic blocks).
 - [ ] Audit logs + retention policy controls.
+- [ ] DMCA/rights takedown workflow (intake, verification, removal, audit trail).
+- [ ] Retention policy controls for audio logs and user data (configurable TTLs).
+- [ ] Consent and privacy controls for any user-submitted content (upload approvals, revocation).
 - [ ] Alerting (Slack/Email/SMS) and incident runbooks.
 - [ ] Analytics dashboard (listener minutes, tune-outs, top tracks).
 
