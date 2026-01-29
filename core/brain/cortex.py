@@ -17,6 +17,13 @@ from greg import GregPersona
 from content_engine import ContentEngine, ContentContext, ShowProducer, get_content_engine
 from radio_automation import AzuraCastClient, VoiceGenerator, PlaylistOptimizer, Track
 
+# Agent Imports
+from core.brain.agents.music import CrateDigger, FlowMaster
+from core.brain.agents.operations import SRE_Sentinel
+from core.brain.agents.development import CodeChemist
+from core.brain.agents.content import ShowRunner, TalentParams
+from core.brain.agents.engineering import DeckMaster
+
 # --- SETUP ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - AEN - %(message)s')
 logger = logging.getLogger("AEN.Cortex")
@@ -26,6 +33,15 @@ greg_agent = GregPersona()
 content_engine = ContentEngine()
 voice_generator = VoiceGenerator()
 show_producer = ShowProducer(content_engine)
+
+# Initialize Specialized Agents
+crate_digger = CrateDigger()
+flow_master = FlowMaster()
+sre_sentinel = SRE_Sentinel()
+code_chemist = CodeChemist()
+show_runner = ShowRunner()
+talent_params = TalentParams()
+deck_master = DeckMaster()
 
 # Optional: AzuraCast integration (if configured)
 try:
