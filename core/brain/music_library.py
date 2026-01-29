@@ -74,6 +74,11 @@ class TrackMetadata:
     # Tags
     tags: List[str] = field(default_factory=list)
     mood: List[str] = field(default_factory=list)  # e.g., ["uplifting", "dark"]
+
+    # AI Generation Metadata
+    is_generated: bool = False
+    generation_source: Optional[str] = None  # e.g., "lyria-2", "suno", "elevenlabs"
+    generation_prompt: Optional[str] = None
     
     # File hash for deduplication
     file_hash: Optional[str] = None
@@ -82,6 +87,8 @@ class TrackMetadata:
         """Check if track matches a search query."""
         query = query.lower()
         searchable = f"{self.title} {self.artist} {self.album or ''} {' '.join(self.tags)}".lower()
+        if self.is_generated:
+            searchable += f" {self.generation_prompt or ''} generated"
         return query in searchable
 
 
