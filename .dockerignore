@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+.git
+.env
+venv
+node_modules
+studio
+broadcast
+tests
+tmp
