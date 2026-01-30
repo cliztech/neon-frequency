@@ -142,7 +142,8 @@ async def generate_host_script(state: RadioState):
     
     # Generate voice audio using ElevenLabs
     try:
-        audio_path = f"/tmp/voice_{hash(script)}.mp3"
+        cache_dir = os.getenv("AUDIO_CACHE_DIR", "/tmp")
+        audio_path = os.path.join(cache_dir, f"voice_{hash(script)}.mp3")
         audio = voice_client.generate(script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path

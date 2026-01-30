@@ -22,6 +22,7 @@ services:
     volumes:
       - ./broadcast/liquidsoap:/etc/liquidsoap
       - ./music:/music
+      - audio_cache:/audio_cache
     ports:
       - "1234:1234" # Telnet Control Port
     command: liquidsoap /etc/liquidsoap/radio.liq
