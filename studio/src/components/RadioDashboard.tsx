@@ -427,6 +427,21 @@ const RadioDashboard = () => {
                         </div>
                     </Panel>
 
+                    <Panel title="Set‑Up Wizard Onboarding" subtitle="Quick Start‑V2 support references.">
+                        <div className="space-y-3 text-xs text-zinc-300">
+                            <p>
+                                Follow the guided onboarding steps to connect your playout system, map metadata, and
+                                publish your first automation clock.
+                            </p>
+                            <p className="text-zinc-500">
+                                Use the Quick Start‑V2 docs when you need a fast refresh on setup best practices.
+                            </p>
+                        </div>
+                        <button className="w-full mt-4 px-4 py-2 rounded-full border border-cyan-400/40 text-cyan-200 text-xs uppercase tracking-[0.3em]">
+                            Launch Set‑Up Wizard
+                        </button>
+                    </Panel>
+
                     <PronunciationSafetyPanel />
 
                     <Panel title="Voice Design Lab" subtitle="Preset library for every station and mood.">
