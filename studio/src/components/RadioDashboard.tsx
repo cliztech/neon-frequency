@@ -102,6 +102,71 @@ const voicePresets = [
     },
 ];
 
+const outputRuleTemplates = [
+    {
+        label: 'Interview Recaps',
+        pattern: '{date}/{show}/{segment}_{guest}_v{version}',
+        route: '/exports/interviews/{host}/',
+        format: 'WAV + TXT',
+        extension: 'wav',
+        tokens: {
+            date: '2024-06-07',
+            show: 'afterhours',
+            segment: 'recaps',
+            guest: 'Lyra',
+            version: '03',
+            host: 'Nova Vale',
+        },
+    },
+    {
+        label: 'Music Beds',
+        pattern: '{show}/{bpm}bpm/{track}_{mood}',
+        route: '/exports/music-beds/{mood}/',
+        format: 'AIFF + JSON',
+        extension: 'aiff',
+        tokens: {
+            show: 'Neon Drift',
+            bpm: '128',
+            track: 'Neon Drift',
+            mood: 'Euphoric',
+        },
+    },
+    {
+        label: 'Promo Cuts',
+        pattern: '{campaign}/{tagline}_{take}',
+        route: '/exports/promos/{campaign}/',
+        format: 'MP3 + SRT',
+        extension: 'mp3',
+        tokens: {
+            campaign: 'Neon Night',
+            tagline: 'poweredbyultra',
+            take: '04',
+        },
+    },
+];
+
+const examplePatterns = [
+    '{date}/{show}/{segment}_{host}_v{version}',
+    '{show}/{bpm}bpm/{track}_{mood}',
+    '{campaign}/{tagline}_{take}',
+];
+
+const sanitizeTokenValue = (value: string) => value.trim().replace(/\s+/g, '_');
+
+const renderPreviewPath = (template: (typeof outputRuleTemplates)[number]) => {
+    const replaceTokens = (value: string) =>
+        value.replace(/\{(\w+)\}/g, (_, token) => {
+            const tokenValue = template.tokens[token as keyof typeof template.tokens];
+            return sanitizeTokenValue(tokenValue ?? `missing_${token}`);
+        });
+
+    const route = replaceTokens(template.route);
+    const pattern = replaceTokens(template.pattern);
+    const joined = `${route}${pattern}.${template.extension}`;
+
+    return joined.replace(/\/{2,}/g, '/');
+};
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -250,6 +315,63 @@ const RadioDashboard = () => {
                             <span className="px-3 py-2 border border-white/10 rounded-full">Auto-fill open slots</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Lock host personas</span>
                             <span className="px-3 py-2 border border-white/10 rounded-full">Adaptive topic radar</span>
+                        </div>
+                    </Panel>
+
+                    <Panel
+                        title="Organized File Saving"
+                        subtitle="Custom filename patterns, folder routing, and export formats with live previews."
+                    >
+                        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                            <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Example patterns</p>
+                            <ul className="mt-3 space-y-2 text-xs text-zinc-200 font-mono">
+                                {examplePatterns.map((pattern) => (
+                                    <li key={pattern} className="flex items-center gap-2">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                                        <span>{pattern}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="grid gap-4">
+                            {outputRuleTemplates.map((template) => (
+                                <div key={template.label} className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
+                                                {template.label}
+                                            </p>
+                                            <p className="text-sm font-semibold mt-2">Pattern: {template.pattern}</p>
+                                            <p className="text-xs text-zinc-400 mt-2">
+                                                Route: {template.route} · Formats: {template.format}
+                                            </p>
+                                        </div>
+                                        <span className="text-[11px] uppercase tracking-[0.3em] text-emerald-200 bg-emerald-500/10 border border-emerald-400/30 px-2 py-1 rounded-full">
+                                            Preview
+                                        </span>
+                                    </div>
+                                    <div className="mt-4 grid gap-3">
+                                        <div className="flex flex-wrap gap-2 text-[11px] text-zinc-300">
+                                            {Object.entries(template.tokens).map(([key, value]) => (
+                                                <span
+                                                    key={key}
+                                                    className="rounded-full border border-white/10 bg-white/5 px-2 py-1"
+                                                >
+                                                    {`{${key}}`} → {sanitizeTokenValue(value)}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs text-emerald-100/90">
+                                            {renderPreviewPath(template)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-5 flex flex-wrap gap-3 text-xs text-zinc-400">
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Token library: date · show · host</span>
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Auto-sanitize names</span>
+                            <span className="px-3 py-2 border border-white/10 rounded-full">Preview path renderer</span>
                         </div>
                     </Panel>
                 </main>
