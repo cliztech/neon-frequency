@@ -4,7 +4,7 @@
 - [x] Document feature parity vs NextKast + RoboDJ (source links, screenshots, capability notes).
 - [x] Research 20+ radio automation tools (see implementation_plan.md in brain folder).
 - [x] Map station clock concepts (hours, dayparts, rotations, sweepers, IDs, ads) into Neon Frequency scheduling model.
-- [ ] Define live-assist controls (manual override, hotkeys, instant cart, voice tracks, emergency override).
+- [x] Define live-assist controls (manual override, hotkeys, instant cart, voice tracks, emergency override).
 - [ ] Specify logging + compliance needs (playout logs, ad proof, metadata history, retention policy).
 - [ ] Outline library management parity (metadata editor, duplicate detection, normalization, loudness).
 - [x] Establish playout intelligence (auto-segue rules, crossfade profiles, energy ramps) - see `radio_automation.py`.
