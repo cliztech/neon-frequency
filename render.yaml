@@ -1,0 +1,23 @@
+services:
+  - type: worker
+    name: neon-core
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 core/brain/cortex.py
+    envVars:
+      - key: OPENWEATHERMAP_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GOOGLE_CSE_ID
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+
+staticSites:
+  - name: neon-studio
+    buildCommand: cd studio && npm install --legacy-peer-deps && npm run build
+    publishDir: studio/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
