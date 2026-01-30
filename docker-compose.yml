@@ -28,5 +28,20 @@ services:
     networks:
       - radio-net
 
+  # THE BRAIN (Cortex)
+  core:
+    build: .
+    environment:
+      - LIQUIDSOAP_HOST=liquidsoap
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_CSE_ID=${GOOGLE_CSE_ID}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    depends_on:
+      - liquidsoap
+    networks:
+      - radio-net
+
 networks:
   radio-net:
