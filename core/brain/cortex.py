@@ -142,7 +142,8 @@ async def generate_host_script(state: RadioState):
     
     # Generate voice audio using ElevenLabs
     try:
-        audio_path = f"/tmp/voice_{hash(script)}.mp3"
+        cache_dir = os.getenv("AUDIO_CACHE_DIR", "/tmp")
+        audio_path = os.path.join(cache_dir, f"voice_{hash(script)}.mp3")
         audio = voice_client.generate(script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path
@@ -161,7 +162,9 @@ async def push_to_deck(state: RadioState):
     try:
         # Connect to Liquidsoap container
         # Note: In a real docker network, hostname might be 'liquidsoap' not localhost
-        reader, writer = await telnetlib3.open_connection('localhost', 1234)
+        host = os.getenv("LIQUIDSOAP_HOST", "localhost")
+        port = int(os.getenv("LIQUIDSOAP_PORT", 1234))
+        reader, writer = await telnetlib3.open_connection(host, port)
         
         # 1. Push Song
         cmd = f"brain_queue.push /music/{state['next_track']}\n"

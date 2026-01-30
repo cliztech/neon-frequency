@@ -1,0 +1,11 @@
+.git
+.env
+__pycache__
+*.pyc
+*.pyo
+venv
+.venv
+node_modules
+studio/node_modules
+studio/dist
+core/tests

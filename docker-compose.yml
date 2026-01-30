@@ -20,6 +20,7 @@ services:
     volumes:
       - ./broadcast/liquidsoap:/etc/liquidsoap
       - ./music:/music
+      - audio_cache:/audio_cache
     ports:
       - "1234:1234" # Telnet Control Port
     command: liquidsoap /etc/liquidsoap/radio.liq
@@ -27,6 +28,24 @@ services:
       - icecast
     networks:
       - radio-net
+
+  # THE BRAIN (Python Cortex)
+  brain:
+    build: .
+    volumes:
+      - ./music:/music
+      - audio_cache:/audio_cache
+      - .env:/app/.env
+    environment:
+      - LIQUIDSOAP_HOST=liquidsoap
+      - AUDIO_CACHE_DIR=/audio_cache
+    depends_on:
+      - liquidsoap
+    networks:
+      - radio-net
+
+volumes:
+  audio_cache:
 
 networks:
   radio-net:
