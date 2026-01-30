@@ -19,6 +19,7 @@ from core.brain.weather_client import WeatherClient
 from core.brain.agents.news_agent import NewsAgent
 from core.brain.music_library import MusicLibrary, TrackMetadata, Genre
 from core.brain.playlist_manager import PlaylistManager
+from core.brain.rotation import RotationEngine, RotationRules
 
 logger = logging.getLogger("AEN.Scheduler")
 
@@ -34,10 +35,13 @@ class RadioScheduler:
         self.weather = WeatherClient()
         self.news = NewsAgent()
         
+        # Rotation Engine
+        self.rotation = RotationEngine(RotationRules())
+
         # Audio output for generated voice tracks
         self.audio_dir = Path(audio_output_dir or os.getenv("AUDIO_OUTPUT_DIR", "./generated_audio"))
         self.audio_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Initialize Content Engines for different dayparts
         self.engine_morning = ContentEngine() # Default AEN
         self.producer = ShowProducer(self.engine_morning)
@@ -98,6 +102,11 @@ class RadioScheduler:
         """
         logger.info(f"Generating schedule for Hour {hour:02d}...")
         
+        # Simulated Start Time for this hour
+        # (Assuming today)
+        start_time = datetime.now().replace(hour=hour, minute=0, second=0, microsecond=0)
+        current_sim_time = start_time
+
         # 1. Context
         weather_data = self.weather.get_weather()
         headlines = self.news.get_top_stories(1)
@@ -121,26 +130,38 @@ class RadioScheduler:
         # 3. Assemble Playlist Tracks
         playlist_tracks: List[TrackMetadata] = []
         
+        # Helper to add track and update time
+        def add_playlist_item(item: TrackMetadata):
+            playlist_tracks.append(item)
+            nonlocal current_sim_time
+            current_sim_time += timedelta(seconds=item.duration_seconds or 0)
+
         # -- Top of Hour ID --
         track = self._create_voice_track(package["top_of_hour_id"], "Station ID")
-        if track: playlist_tracks.append(track)
-        
+        if track: add_playlist_item(track)
+
         # -- Weather Update --
         track = self._create_voice_track(package["weather_update"], "Weather Update")
-        if track: playlist_tracks.append(track)
-        
-        # -- Music Block 1 --
-        # Try to get real music, otherwise mock
-        music_tracks = self.library.get_rotation_picks(count=15) # Grab enough for the hour
-        if not music_tracks:
-            # Create dummy music tracks for demo
-            music_tracks = [
+        if track: add_playlist_item(track)
+
+        # -- Music Selection --
+        # Get candidates (all 'normal' rotation or whatever logic)
+        # For simplicity, getting all valid candidates from library or fallback
+        all_candidates = list(self.library.tracks.values())
+        if not all_candidates:
+             # Create dummy music tracks for demo
+            all_candidates = [
                 TrackMetadata(f"/music/demo_track_{i}.mp3", f"Demo Track {i}", "Unknown Artist", duration_seconds=180)
-                for i in range(1, 15)
+                for i in range(1, 30)
             ]
-        
-        music_idx = 0
-        
+
+        # Function to pick a song
+        def pick_song():
+            track = self.rotation.select_track(all_candidates, current_sim_time)
+            if track:
+                self.rotation.add_to_history(track, current_sim_time)
+            return track
+
         # Loop to fill the hour
         # Structure: Music -> Music -> Music -> Voice Intro -> Music
         
@@ -148,46 +169,45 @@ class RadioScheduler:
 
         # Block 1 (3 songs)
         for _ in range(3):
-            if music_idx < len(music_tracks):
-                playlist_tracks.append(music_tracks[music_idx])
-                music_idx += 1
+            song = pick_song()
+            if song: add_playlist_item(song)
 
         # -- News Brief --
         track = self._create_voice_track(package["news_brief"], "News Update")
-        if track: playlist_tracks.append(track)
+        if track: add_playlist_item(track)
 
         # -- Block 2 (Music with intros) --
         for i in range(3):
-            if music_idx < len(music_tracks):
-                song = music_tracks[music_idx]
-
+            song = pick_song()
+            if song:
                 # Insert Intro if available
                 if i < len(script_intros):
-                    # We need to regenerate intro specifically for THIS song to be accurate
-                    # The package gives generic ones, but let's try to be specific
                     intro_text = self.engine_morning.generate_song_intro(
                         ContentContext(weather=weather_data, next_track=song.title, time_of_day=time_of_day)
                     )
                     intro = self._create_voice_track(intro_text, f"Intro: {song.title}")
-                    if intro: playlist_tracks.append(intro)
+                    if intro: add_playlist_item(intro)
 
-                playlist_tracks.append(song)
-                music_idx += 1
+                add_playlist_item(song)
 
         # -- Ad Break --
         track = self._create_voice_track(package["ad_lead_in"], "Ad Break Lead-in")
-        if track: playlist_tracks.append(track)
+        if track: add_playlist_item(track)
 
         # (Insert Ad Placeholder)
-        playlist_tracks.append(TrackMetadata("/ads/dummy_ad.mp3", "Sponsor Message", "Sponsor", duration_seconds=30))
+        ad_track = TrackMetadata("/ads/dummy_ad.mp3", "Sponsor Message", "Sponsor", duration_seconds=30)
+        add_playlist_item(ad_track)
 
         track = self._create_voice_track(package["ad_lead_out"], "Ad Break Lead-out")
-        if track: playlist_tracks.append(track)
+        if track: add_playlist_item(track)
 
-        # -- Remaining Music --
-        while music_idx < len(music_tracks) and music_idx < 12: # Limit to ~12 songs/hr
-            playlist_tracks.append(music_tracks[music_idx])
-            music_idx += 1
+        # -- Remaining Music to fill hour --
+        # Rough check: if we are under 55 mins, keep adding
+        while (current_sim_time - start_time).total_seconds() < 55 * 60:
+            song = pick_song()
+            if not song:
+                break # No more valid songs
+            add_playlist_item(song)
 
         # 4. Export
         filename = f"hour_{hour:02d}.m3u"

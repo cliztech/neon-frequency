@@ -3,11 +3,13 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 from core.brain.playlist_manager import PlaylistManager
 from core.brain.music_library import TrackMetadata
 from core.brain.scheduler import RadioScheduler
+from core.brain.rotation import RotationEngine, RotationRules
 
 class TestPlaylistManager(unittest.TestCase):
     def setUp(self):
@@ -48,6 +50,40 @@ class TestPlaylistManager(unittest.TestCase):
         self.assertEqual(parsed[0].title, "Song 1")
         self.assertEqual(parsed[1].duration_seconds, 200)
 
+class TestRotationEngine(unittest.TestCase):
+    def setUp(self):
+        self.rules = RotationRules(artist_separation_minutes=60, track_separation_minutes=120)
+        self.engine = RotationEngine(self.rules)
+        self.track_a = TrackMetadata("/music/a.mp3", "Song A", "Artist A", duration_seconds=180)
+        self.track_b = TrackMetadata("/music/b.mp3", "Song B", "Artist B", duration_seconds=180)
+        self.track_c = TrackMetadata("/music/c.mp3", "Song C", "Artist A", duration_seconds=180) # Same artist as A
+
+    def test_track_separation(self):
+        now = datetime.now()
+
+        # Play Track A
+        self.engine.add_to_history(self.track_a, now - timedelta(minutes=30))
+
+        # Try to play Track A again (should fail, 30 min < 120 min)
+        self.assertFalse(self.engine.check_separation(self.track_a, now))
+
+        # Try to play Track B (should pass)
+        self.assertTrue(self.engine.check_separation(self.track_b, now))
+
+    def test_artist_separation(self):
+        now = datetime.now()
+
+        # Play Track A
+        self.engine.add_to_history(self.track_a, now - timedelta(minutes=30))
+
+        # Try to play Track C (Same Artist) - should fail
+        self.assertFalse(self.engine.check_separation(self.track_c, now))
+
+        # Move time forward past 60 mins
+        future = now + timedelta(minutes=61)
+        self.assertTrue(self.engine.check_separation(self.track_c, future))
+
+
 class TestRadioScheduler(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
@@ -71,12 +107,14 @@ class TestRadioScheduler(unittest.TestCase):
         # Mock generate to return dummy bytes
         mock_voice_instance.generate.return_value = b"fake audio data"
 
-        # Mock Music Library
+        # Mock Music Library to return a dictionary of tracks
         mock_library_instance = mock_library.return_value
-        mock_library_instance.get_rotation_picks.return_value = [
-            TrackMetadata("/music/test1.mp3", "Test 1", "Artist 1", duration_seconds=180),
-            TrackMetadata("/music/test2.mp3", "Test 2", "Artist 2", duration_seconds=180)
-        ]
+        # The scheduler now accesses .tracks.values() directly
+        mock_library_instance.tracks = {
+            "1": TrackMetadata("/music/test1.mp3", "Test 1", "Artist 1", duration_seconds=180),
+            "2": TrackMetadata("/music/test2.mp3", "Test 2", "Artist 2", duration_seconds=180),
+            "3": TrackMetadata("/music/test3.mp3", "Test 3", "Artist 3", duration_seconds=180),
+        }
 
         scheduler = RadioScheduler(audio_output_dir=self.test_dir)
 

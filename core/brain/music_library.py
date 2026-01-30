@@ -132,6 +132,9 @@ class MusicLibrary:
         self.music_dir = music_dir or os.getenv("MUSIC_DIR", "/music")
         self.tracks: Dict[str, TrackMetadata] = {}  # hash -> metadata
         self.playlists: Dict[str, Playlist] = {}
+        # Index for faster lookups
+        self.artist_index: Dict[str, List[str]] = {} # artist -> list of track hashes
+
         logger.info(f"Music library initialized: {self.music_dir}")
     
     def scan_directory(self, path: str = None) -> int:
@@ -222,6 +225,12 @@ class MusicLibrary:
         
         key = track.file_hash or track.file_path
         self.tracks[key] = track
+
+        # Update index
+        artist_key = track.artist.lower()
+        if artist_key not in self.artist_index:
+            self.artist_index[artist_key] = []
+        self.artist_index[artist_key].append(key)
     
     def search(self, query: str, limit: int = 50) -> List[TrackMetadata]:
         """Search tracks by query."""
