@@ -161,7 +161,8 @@ async def push_to_deck(state: RadioState):
     try:
         # Connect to Liquidsoap container
         # Note: In a real docker network, hostname might be 'liquidsoap' not localhost
-        reader, writer = await telnetlib3.open_connection('localhost', 1234)
+        host = os.getenv("LIQUIDSOAP_HOST", "localhost")
+        reader, writer = await telnetlib3.open_connection(host, 1234)
         
         # 1. Push Song
         cmd = f"brain_queue.push /music/{state['next_track']}\n"
