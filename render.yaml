@@ -1,0 +1,23 @@
+previews:
+  generation: automatic
+
+services:
+  - type: web
+    name: neon-studio
+    runtime: static
+    rootDir: studio
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+  - type: web
+    name: neon-web-client
+    runtime: static
+    rootDir: visuals/web-client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+  - type: worker
+    name: neon-cortex
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python core/brain/cortex.py
