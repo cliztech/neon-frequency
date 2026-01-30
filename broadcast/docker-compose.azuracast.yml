@@ -41,10 +41,10 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - ICECAST_SOURCE_PASSWORD=hackme
-      - ICECAST_ADMIN_PASSWORD=hackme
-      - ICECAST_PASSWORD=hackme
-      - ICECAST_RELAY_PASSWORD=hackme
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD:-hackme}
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD:-hackme}
+      - ICECAST_PASSWORD=${ICECAST_PASSWORD:-hackme}
+      - ICECAST_RELAY_PASSWORD=${ICECAST_RELAY_PASSWORD:-hackme}
     volumes:
       - ./logs:/var/log/icecast2
     restart: unless-stopped

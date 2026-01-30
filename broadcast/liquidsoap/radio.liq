@@ -32,10 +32,11 @@ stream = fallback(track_sensitive=false, [
 ])
 
 # 4. OUTPUT
+# Password fetched from environment variable for security
 output.icecast(%mp3(bitrate=192),
   host = "icecast",
   port = 8000,
-  password = "hackme",
+  password = environment.get("ICECAST_SOURCE_PASSWORD"),
   mount = "/neon",
   name = "Neon Frequency",
   description = "Cybernetic Broadcast System",
