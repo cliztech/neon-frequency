@@ -36,7 +36,7 @@ stream = fallback(track_sensitive=false, [
 output.icecast(%mp3(bitrate=192),
   host = "icecast",
   port = 8000,
-  password = environment.get("ICECAST_SOURCE_PASSWORD"),
+  password = sys.getenv("ICECAST_SOURCE_PASSWORD"),
   mount = "/neon",
   name = "Neon Frequency",
   description = "Cybernetic Broadcast System",

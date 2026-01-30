@@ -7,10 +7,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD:-hackme}
-      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD:-hackme}
-      - ICECAST_PASSWORD=${ICECAST_PASSWORD:-hackme}
-      - ICECAST_RELAY_PASSWORD=${ICECAST_RELAY_PASSWORD:-hackme}
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
+      - ICECAST_PASSWORD=${ICECAST_PASSWORD}
+      - ICECAST_RELAY_PASSWORD=${ICECAST_RELAY_PASSWORD}
     networks:
       - radio-net
 
@@ -18,7 +18,7 @@ services:
   liquidsoap:
     image: savonet/liquidsoap:v2.2.5
     environment:
-      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD:-hackme}
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
     volumes:
       - ./broadcast/liquidsoap:/etc/liquidsoap
       - ./music:/music
