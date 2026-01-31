@@ -102,6 +102,71 @@ const voicePresets = [
     },
 ];
 
+const weatherPromptTemplates = [
+    {
+        name: 'Realtime Weather Pulse',
+        detail: 'Fast hits with temps, wind, and “Forecast is looking good...” optimism.',
+        tag: 'Recommended',
+        active: true,
+    },
+    {
+        name: 'Drive-Time Wrap',
+        detail: 'Traffic-aware forecast with commute-ready phrasing.',
+        tag: 'Commute',
+        active: false,
+    },
+    {
+        name: 'Weekend Spotlight',
+        detail: 'Leans into outdoor moments and warm transitions.',
+        tag: 'Lifestyle',
+        active: false,
+    },
+];
+
+const weatherProviders = [
+    {
+        name: 'National Weather Service',
+        status: 'Primary',
+        description: 'Government-grade alerts + Realtime Weather feed.',
+        active: true,
+    },
+    {
+        name: 'Weather API',
+        status: 'Backup',
+        description: 'Fallback coverage with global station rollups.',
+        active: false,
+    },
+];
+
+const weatherVoiceAssignments = [
+    {
+        daypart: 'Morning',
+        voice: 'Nova Vale',
+        style: 'Bright, energizing',
+    },
+    {
+        daypart: 'Midday',
+        voice: 'Echo Grey',
+        style: 'Balanced, measured',
+    },
+    {
+        daypart: 'Evening',
+        voice: 'Axel Rift',
+        style: 'Conversational, crisp',
+    },
+    {
+        daypart: 'Overnight',
+        voice: 'Lyra Flux',
+        style: 'Low, intimate',
+    },
+];
+
+const weatherPreviewMeta = [
+    { label: 'Daypart', value: 'Midday' },
+    { label: 'Voice', value: 'Echo Grey' },
+    { label: 'Output', value: 'Realtime Weather' },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -275,6 +340,109 @@ const RadioDashboard = () => {
                                     <p className="text-xs text-zinc-400 mt-1">{agent.persona}</p>
                                 </div>
                             ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Weather Reports" subtitle="Realtime Weather scripting + voice assignment.">
+                        <div className="space-y-4">
+                            <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Provider</p>
+                                    <span className="text-[11px] uppercase tracking-[0.3em] text-cyan-300">
+                                        Realtime Weather
+                                    </span>
+                                </div>
+                                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                                    {weatherProviders.map((provider) => (
+                                        <button
+                                            key={provider.name}
+                                            className={`rounded-lg border px-3 py-2 text-left transition ${
+                                                provider.active
+                                                    ? 'border-cyan-400/40 bg-cyan-500/10 text-cyan-100'
+                                                    : 'border-white/10 bg-white/5 text-zinc-300'
+                                            }`}
+                                            aria-pressed={provider.active}
+                                            type="button"
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <span className="block text-xs uppercase tracking-[0.3em] text-zinc-400">
+                                                    {provider.status}
+                                                </span>
+                                                {provider.active && (
+                                                    <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-200">
+                                                        Selected
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="mt-1 block text-sm font-semibold">{provider.name}</span>
+                                            <span className="mt-1 block text-xs text-zinc-400">{provider.description}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-gradient-to-br from-white/10 to-transparent">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Prompt Style</p>
+                                <div className="mt-3 space-y-3">
+                                    {weatherPromptTemplates.map((template) => (
+                                        <button
+                                            key={template.name}
+                                            className={`w-full border rounded-lg p-3 text-left transition ${
+                                                template.active
+                                                    ? 'border-cyan-400/40 bg-cyan-500/10'
+                                                    : 'border-white/10 bg-white/5'
+                                            }`}
+                                            type="button"
+                                            aria-pressed={template.active}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <p className="text-sm font-semibold">{template.name}</p>
+                                                <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-400">
+                                                    {template.tag}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-zinc-400 mt-1">{template.detail}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Voice + Daypart</p>
+                                <div className="mt-3 space-y-2">
+                                    {weatherVoiceAssignments.map((assignment) => (
+                                        <div
+                                            key={`${assignment.daypart}-${assignment.voice}`}
+                                            className="grid grid-cols-[80px_1fr_1fr] items-center gap-2 text-xs border border-white/10 rounded-lg px-3 py-2"
+                                        >
+                                            <span className="text-zinc-200">{assignment.daypart}</span>
+                                            <span className="text-zinc-100">{assignment.voice}</span>
+                                            <span className="text-zinc-400 text-right">{assignment.style}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 p-4 bg-zinc-900/60">
+                                <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Preview Sample</p>
+                                <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-zinc-300">
+                                    {weatherPreviewMeta.map((item) => (
+                                        <span
+                                            key={item.label}
+                                            className="rounded-full border border-white/10 px-2 py-1 bg-white/5"
+                                        >
+                                            {item.label}: <span className="text-white">{item.value}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                                <p className="text-sm mt-3 text-zinc-200 leading-relaxed">
+                                    “Forecast is looking good... 72° and clear skies for your afternoon window. We’ll see a
+                                    gentle northwest breeze, so step out with confidence and catch that golden hour.”
+                                </p>
+                                <p className="text-xs text-zinc-400 mt-2">
+                                    Routed by National Weather Service · Template: Realtime Weather Pulse
+                                </p>
+                            </div>
                         </div>
                     </Panel>
 
