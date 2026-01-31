@@ -307,6 +307,84 @@ class VoiceMixer:
             voice_generator=voice_generator
         )
 
+    def mix_over_intro(
+        self,
+        voice_path: str,
+        song_path: str,
+        intro_duration: float,
+        output_path: str = None
+    ) -> Optional[str]:
+        """
+        Mix voice track over the intro (ramp) of a song.
+
+        Args:
+            voice_path: Path to voice file
+            song_path: Path to song file
+            intro_duration: Duration of intro in seconds (the 'post')
+            output_path: Output file path
+
+        Returns:
+            Path to mixed file, or None if failed
+        """
+        if output_path is None:
+            import hashlib
+            # Create deterministic filename based on inputs so we cache mixes
+            h = hashlib.md5(f"{voice_path}{song_path}{intro_duration}".encode()).hexdigest()
+            output_path = os.path.join(self.output_directory, f"ramp_mix_{h}.mp3")
+
+        # Check cache
+        if os.path.exists(output_path):
+            return output_path
+
+        try:
+            from pydub import AudioSegment
+
+            # Load files
+            if not os.path.exists(voice_path) or not os.path.exists(song_path):
+                logger.error(f"Missing input files for mixing: {voice_path}, {song_path}")
+                return None
+
+            voice = AudioSegment.from_file(voice_path)
+            song = AudioSegment.from_file(song_path)
+
+            # Logic:
+            # Voice starts at 0. Song starts at 0.
+            # Voice should end before intro_duration.
+            # Ideally, we align the END of the voice with the END of the intro (hitting the post).
+            # But standard practice is usually start immediately and hope it fits (since we constrained generation).
+            # Let's align START for now, as that's safer than voice starting late and clashing if we calculated wrong.
+            # But let's add a small padding (0.5s) so it doesn't start INSTANTLY with the first drum kick.
+
+            start_offset_ms = 500 # 0.5s
+
+            # Adjust levels
+            # Song dips slightly? Usually not for intro ramps, just voice sits on top.
+            # Maybe duck song -2dB during voice.
+
+            voice_len = len(voice)
+
+            # Create a ducked version of song during the voice segment
+            # We need to overlay voice onto song at start_offset_ms
+
+            # Simple overlay
+            # song.overlay(voice, position=start_offset_ms)
+            # However, pydub overlay handles volume.
+            # Let's boost voice slightly to cut through
+            voice = voice + 2
+
+            mixed = song.overlay(voice, position=start_offset_ms)
+
+            mixed.export(output_path, format="mp3")
+            logger.info(f"Ramp mix created: {output_path}")
+            return output_path
+
+        except ImportError:
+            logger.error("pydub not installed, cannot mix ramp.")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to mix ramp: {e}")
+            return None
+
 
 # Singleton instance
 _voice_mixer: Optional[VoiceMixer] = None
