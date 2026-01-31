@@ -89,19 +89,27 @@ async def monitor_deck(state: RadioState):
     # Try to get real now playing from AzuraCast
     ac = get_azuracast()
     if ac:
-        now_playing = ac.get_now_playing()
+        now_playing = await asyncio.to_thread(ac.get_now_playing)
         if now_playing:
             state["current_track"] = f"{now_playing.track.artist} - {now_playing.track.title}"
             logging.info(f"Now Playing (AzuraCast): {state['current_track']}")
     
-    # Update Context
-    state["weather"] = weather_client.get_weather()
-    state["schedule"] = workspace_skill.get_schedule()
-    trend = trend_watcher.get_current_trends()
-    state["mood"] = f"Hype ({trend})"
+    # Update Context in Parallel
+    # weather_client.get_weather and workspace_skill.get_schedule are blocking IO calls
+    # trend_watcher and news_agent are currently fast/mocked but we run them in parallel for consistency
+    results = await asyncio.gather(
+        asyncio.to_thread(weather_client.get_weather),
+        asyncio.to_thread(workspace_skill.get_schedule),
+        asyncio.to_thread(trend_watcher.get_current_trends),
+        asyncio.to_thread(news_agent.get_top_stories, 1)
+    )
     
-    # Fetch News
-    headlines = news_agent.get_top_stories(1)
+    state["weather"] = results[0]
+    state["schedule"] = results[1]
+    trend = results[2]
+    headlines = results[3]
+
+    state["mood"] = f"Hype ({trend})"
     state["news_headline"] = headlines[0] if headlines else "No news is good news."
     
     return state
@@ -136,7 +144,7 @@ async def generate_host_script(state: RadioState):
         mood=f"{state['mood']} | News: {state['news_headline']} | Schedule: {state['schedule']}"
     )
     
-    script = content_engine.generate_song_intro(context)
+    script = await asyncio.to_thread(content_engine.generate_song_intro, context)
     state["voice_script"] = script
     logging.info(f"Generated Script: {script}")
     
@@ -144,7 +152,7 @@ async def generate_host_script(state: RadioState):
     try:
         cache_dir = os.getenv("AUDIO_CACHE_DIR", "/tmp")
         audio_path = os.path.join(cache_dir, f"voice_{hash(script)}.mp3")
-        audio = voice_client.generate(script, output_path=audio_path)
+        audio = await asyncio.to_thread(voice_client.generate, script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path
             logging.info(f"Voice audio generated: {audio_path}")
