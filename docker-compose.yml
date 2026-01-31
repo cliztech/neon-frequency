@@ -7,24 +7,42 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ICECAST_SOURCE_PASSWORD=hackme
-      - ICECAST_ADMIN_PASSWORD=hackme
-      - ICECAST_PASSWORD=hackme
-      - ICECAST_RELAY_PASSWORD=hackme
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
+      - ICECAST_ADMIN_PASSWORD=${ICECAST_ADMIN_PASSWORD}
+      - ICECAST_PASSWORD=${ICECAST_PASSWORD}
+      - ICECAST_RELAY_PASSWORD=${ICECAST_RELAY_PASSWORD}
     networks:
       - radio-net
 
   # THE DECK (Liquidsoap)
   liquidsoap:
     image: savonet/liquidsoap:v2.2.5
+    environment:
+      - ICECAST_SOURCE_PASSWORD=${ICECAST_SOURCE_PASSWORD}
     volumes:
       - ./broadcast/liquidsoap:/etc/liquidsoap
       - ./music:/music
+      - audio_cache:/audio_cache
     ports:
       - "1234:1234" # Telnet Control Port
     command: liquidsoap /etc/liquidsoap/radio.liq
     depends_on:
       - icecast
+    networks:
+      - radio-net
+
+  # THE BRAIN (Cortex)
+  core:
+    build: .
+    environment:
+      - LIQUIDSOAP_HOST=liquidsoap
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_CSE_ID=${GOOGLE_CSE_ID}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+    depends_on:
+      - liquidsoap
     networks:
       - radio-net
 

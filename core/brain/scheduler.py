@@ -1,275 +1,209 @@
 """
-Broadcast Scheduler for Neon Frequency
-=======================================
-Manages scheduling, station clocks, and automated programming.
+Radio Scheduler
+===============
+AI-driven scheduler that generates daily playlists with voice tracking,
+weather, news, and music.
 """
 
 import os
 import logging
+import random
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any, Callable
-from dataclasses import dataclass, field
-from enum import Enum
+from typing import List, Optional
+from pathlib import Path
+
+# Imports
+from core.brain.content_engine import ContentEngine, ShowProducer, ContentContext, DJPersonality
+from core.brain.voice_generator import ElevenLabsClient
+from core.brain.weather_client import WeatherClient
+from core.brain.agents.news_agent import NewsAgent
+from core.brain.music_library import MusicLibrary, TrackMetadata, Genre
+from core.brain.playlist_manager import PlaylistManager
 
 logger = logging.getLogger("AEN.Scheduler")
 
-
-class DayPart(Enum):
-    """Radio industry dayparts."""
-    OVERNIGHT = "overnight"      # 12am - 6am
-    MORNING = "morning"          # 6am - 10am
-    MIDDAY = "midday"           # 10am - 3pm
-    AFTERNOON = "afternoon"      # 3pm - 7pm
-    EVENING = "evening"         # 7pm - 12am
-
-
-class SegmentType(Enum):
-    """Types of broadcast segments."""
-    MUSIC = "music"
-    VOICE = "voice"
-    STATION_ID = "station_id"
-    WEATHER = "weather"
-    NEWS = "news"
-    AD_BREAK = "ad_break"
-    JINGLE = "jingle"
-    SWEEPER = "sweeper"
-    SHOW_INTRO = "show_intro"
-    SHOW_OUTRO = "show_outro"
-
-
-@dataclass
-class ScheduleSlot:
-    """A single slot in the broadcast schedule."""
-    segment_type: SegmentType
-    duration_seconds: int
-    minute_of_hour: int  # 0-59, when this slot should play
-    content_id: Optional[str] = None  # Reference to specific content
-    playlist_id: Optional[str] = None
-    callback: Optional[Callable] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class HourClock:
+class RadioScheduler:
     """
-    Station clock defining what plays each hour.
-    
-    Inspired by industry standard hot clocks from Myriad, NextKast, etc.
-    """
-    name: str
-    daypart: DayPart
-    slots: List[ScheduleSlot] = field(default_factory=list)
-    
-    def add_slot(self, slot: ScheduleSlot):
-        """Add a slot to the clock."""
-        self.slots.append(slot)
-        self.slots.sort(key=lambda s: s.minute_of_hour)
-    
-    def get_current_slot(self) -> Optional[ScheduleSlot]:
-        """Get the slot that should be playing now."""
-        current_minute = datetime.now().minute
-        
-        # Find the most recent slot
-        for slot in reversed(self.slots):
-            if slot.minute_of_hour <= current_minute:
-                return slot
-        
-        # Return last slot if we've wrapped
-        return self.slots[-1] if self.slots else None
-    
-    def get_next_slot(self) -> Optional[ScheduleSlot]:
-        """Get the next upcoming slot."""
-        current_minute = datetime.now().minute
-        
-        for slot in self.slots:
-            if slot.minute_of_hour > current_minute:
-                return slot
-        
-        # Wrap to first slot of next hour
-        return self.slots[0] if self.slots else None
-
-
-class ClockBuilder:
-    """Factory for creating common clock patterns."""
-    
-    @staticmethod
-    def create_music_heavy_clock(name: str = "Music Heavy") -> HourClock:
-        """Create a clock focused on music with minimal talk."""
-        clock = HourClock(name=name, daypart=DayPart.OVERNIGHT)
-        
-        # Top of hour
-        clock.add_slot(ScheduleSlot(SegmentType.STATION_ID, 10, 0))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 1))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 4))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 7))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 30, 10))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 11))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 14))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 17))
-        
-        # Quarter hour
-        clock.add_slot(ScheduleSlot(SegmentType.SWEEPER, 15, 20))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 21))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 24))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 27))
-        
-        # Half hour - ad break
-        clock.add_slot(ScheduleSlot(SegmentType.AD_BREAK, 120, 30))
-        clock.add_slot(ScheduleSlot(SegmentType.JINGLE, 10, 32))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 33))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 36))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 39))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 30, 42))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 43))
-        
-        # Three quarter
-        clock.add_slot(ScheduleSlot(SegmentType.WEATHER, 30, 45))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 46))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 49))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 52))
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 55))
-        clock.add_slot(ScheduleSlot(SegmentType.SWEEPER, 15, 58))
-        
-        return clock
-    
-    @staticmethod
-    def create_talk_radio_clock(name: str = "Talk Radio") -> HourClock:
-        """Create a clock for talk-heavy programming."""
-        clock = HourClock(name=name, daypart=DayPart.MORNING)
-        
-        clock.add_slot(ScheduleSlot(SegmentType.STATION_ID, 10, 0))
-        clock.add_slot(ScheduleSlot(SegmentType.SHOW_INTRO, 60, 1))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 480, 2))  # 8 min talk segment
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 10))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 480, 13))
-        clock.add_slot(ScheduleSlot(SegmentType.WEATHER, 60, 21))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 420, 22))
-        
-        clock.add_slot(ScheduleSlot(SegmentType.AD_BREAK, 180, 30))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 600, 33))  # 10 min talk
-        clock.add_slot(ScheduleSlot(SegmentType.MUSIC, 180, 43))
-        clock.add_slot(ScheduleSlot(SegmentType.NEWS, 120, 46))
-        clock.add_slot(ScheduleSlot(SegmentType.VOICE, 420, 48))
-        clock.add_slot(ScheduleSlot(SegmentType.SHOW_OUTRO, 60, 55))
-        clock.add_slot(ScheduleSlot(SegmentType.SWEEPER, 15, 56))
-        
-        return clock
-
-
-@dataclass
-class Show:
-    """A scheduled radio show."""
-    name: str
-    host: str
-    start_time: datetime
-    duration_hours: int
-    clock: HourClock
-    playlist_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    @property
-    def end_time(self) -> datetime:
-        return self.start_time + timedelta(hours=self.duration_hours)
-    
-    def is_active(self) -> bool:
-        now = datetime.now()
-        return self.start_time <= now < self.end_time
-
-
-class BroadcastScheduler:
-    """
-    Master scheduler for radio broadcasts.
-    
-    Manages:
-    - Daily programming schedule
-    - Station clocks per daypart
-    - Show scheduling
-    - Event triggers
+    The Master Scheduler.
+    Generates ready-to-play M3U playlists with interleaved AI voice tracks.
     """
     
-    def __init__(self):
-        self.clocks: Dict[DayPart, HourClock] = {}
-        self.shows: List[Show] = []
-        self.default_clock = ClockBuilder.create_music_heavy_clock()
-        self._init_default_clocks()
-        logger.info("Broadcast scheduler initialized")
-    
-    def _init_default_clocks(self):
-        """Initialize default clocks for each daypart."""
-        self.clocks[DayPart.OVERNIGHT] = ClockBuilder.create_music_heavy_clock("Overnight")
-        self.clocks[DayPart.MORNING] = ClockBuilder.create_talk_radio_clock("Morning Drive")
-        self.clocks[DayPart.MIDDAY] = ClockBuilder.create_music_heavy_clock("Midday Mix")
-        self.clocks[DayPart.AFTERNOON] = ClockBuilder.create_music_heavy_clock("Afternoon Drive")
-        self.clocks[DayPart.EVENING] = ClockBuilder.create_music_heavy_clock("Evening Vibes")
-    
-    def get_current_daypart(self) -> DayPart:
-        """Get the current daypart based on time."""
-        hour = datetime.now().hour
+    def __init__(self, library_path: str = None, audio_output_dir: str = None):
+        self.library = MusicLibrary(library_path)
+        self.voice = ElevenLabsClient()
+        self.weather = WeatherClient()
+        self.news = NewsAgent()
         
-        if 0 <= hour < 6:
-            return DayPart.OVERNIGHT
-        elif 6 <= hour < 10:
-            return DayPart.MORNING
-        elif 10 <= hour < 15:
-            return DayPart.MIDDAY
-        elif 15 <= hour < 19:
-            return DayPart.AFTERNOON
-        else:
-            return DayPart.EVENING
-    
-    def get_active_clock(self) -> HourClock:
-        """Get the currently active clock."""
-        # Check for active show first
-        for show in self.shows:
-            if show.is_active():
-                return show.clock
+        # Audio output for generated voice tracks
+        self.audio_dir = Path(audio_output_dir or os.getenv("AUDIO_OUTPUT_DIR", "./generated_audio"))
+        self.audio_dir.mkdir(parents=True, exist_ok=True)
         
-        # Fall back to daypart clock
-        daypart = self.get_current_daypart()
-        return self.clocks.get(daypart, self.default_clock)
-    
-    def schedule_show(self, show: Show):
-        """Add a show to the schedule."""
-        self.shows.append(show)
-        self.shows.sort(key=lambda s: s.start_time)
-        logger.info(f"Scheduled show: {show.name} at {show.start_time}")
-    
-    def get_upcoming_shows(self, hours: int = 24) -> List[Show]:
-        """Get shows in the next N hours."""
-        now = datetime.now()
-        cutoff = now + timedelta(hours=hours)
-        return [s for s in self.shows if now <= s.start_time < cutoff]
-    
-    def get_current_slot(self) -> Optional[ScheduleSlot]:
-        """Get what should be playing right now."""
-        clock = self.get_active_clock()
-        return clock.get_current_slot()
-    
-    def get_next_slot(self) -> Optional[ScheduleSlot]:
-        """Get the next upcoming slot."""
-        clock = self.get_active_clock()
-        return clock.get_next_slot()
-    
-    def get_schedule_summary(self) -> Dict[str, Any]:
-        """Get a summary of the current schedule."""
-        clock = self.get_active_clock()
-        current_slot = self.get_current_slot()
-        next_slot = self.get_next_slot()
+        # Initialize Content Engines for different dayparts
+        self.engine_morning = ContentEngine() # Default AEN
+        self.producer = ShowProducer(self.engine_morning)
         
-        return {
-            "daypart": self.get_current_daypart().value,
-            "active_clock": clock.name,
-            "current_segment": current_slot.segment_type.value if current_slot else None,
-            "next_segment": next_slot.segment_type.value if next_slot else None,
-            "next_segment_at": next_slot.minute_of_hour if next_slot else None,
-            "upcoming_shows": [
-                {"name": s.name, "host": s.host, "start": s.start_time.isoformat()}
-                for s in self.get_upcoming_shows(6)
+    def _generate_audio_file(self, text: str, prefix: str = "voice") -> Optional[str]:
+        """
+        Generate audio from text and save to disk.
+        Returns the absolute path to the file.
+        """
+        if not text:
+            return None
+
+        # Create a filename based on hash of text to avoid re-generating same lines
+        import hashlib
+        text_hash = hashlib.md5(text.encode('utf-8')).hexdigest()
+        filename = f"{prefix}_{text_hash}.mp3"
+        filepath = self.audio_dir / filename
+        
+        # If exists, return cached
+        if filepath.exists():
+            return str(filepath.absolute())
+
+        # Generate
+        audio_data = self.voice.generate(text)
+        if audio_data:
+            with open(filepath, "wb") as f:
+                f.write(audio_data)
+            return str(filepath.absolute())
+
+        return None
+
+    def _create_voice_track(self, text: str, title: str = "Voice Track") -> Optional[TrackMetadata]:
+        """Create a TrackMetadata object for a voice track."""
+        filepath = self._generate_audio_file(text)
+        if not filepath:
+            return None
+
+        # Get duration (mocking or reading file)
+        # TODO: Use mutagen or similar to read exact duration from the generated MP3 file
+        # For simplicity, we estimate duration based on word count (avg 150 wpm)
+        word_count = len(text.split())
+        duration = max(2, int((word_count / 150) * 60))
+
+        return TrackMetadata(
+            file_path=filepath,
+            title=title,
+            artist="AI DJ",
+            duration_seconds=duration,
+            genre=Genre.OTHER,
+            is_generated=True,
+            generation_prompt=text
+        )
+
+    def generate_hour_block(self, hour: int, output_dir: str) -> str:
+        """
+        Generate a 1-hour playlist M3U file.
+        Returns the path to the generated playlist.
+        """
+        logger.info(f"Generating schedule for Hour {hour:02d}...")
+        
+        # 1. Context
+        weather_data = self.weather.get_weather()
+        headlines = self.news.get_top_stories(1)
+        
+        # Determine Mood/Time
+        time_of_day = "night"
+        if 5 <= hour < 12: time_of_day = "morning"
+        elif 12 <= hour < 17: time_of_day = "afternoon"
+        elif 17 <= hour < 21: time_of_day = "evening"
+        
+        context = ContentContext(
+            weather=weather_data,
+            trending_topics=headlines,
+            time_of_day=time_of_day,
+            mood="energetic" if 8 <= hour <= 20 else "chill"
+        )
+        
+        # 2. Get Content Script Package
+        package = self.producer.generate_hourly_package(context)
+        
+        # 3. Assemble Playlist Tracks
+        playlist_tracks: List[TrackMetadata] = []
+        
+        # -- Top of Hour ID --
+        track = self._create_voice_track(package["top_of_hour_id"], "Station ID")
+        if track: playlist_tracks.append(track)
+        
+        # -- Weather Update --
+        track = self._create_voice_track(package["weather_update"], "Weather Update")
+        if track: playlist_tracks.append(track)
+        
+        # -- Music Block 1 --
+        # Try to get real music, otherwise mock
+        music_tracks = self.library.get_rotation_picks(count=15) # Grab enough for the hour
+        if not music_tracks:
+            # Create dummy music tracks for demo
+            music_tracks = [
+                TrackMetadata(f"/music/demo_track_{i}.mp3", f"Demo Track {i}", "Unknown Artist", duration_seconds=180)
+                for i in range(1, 15)
             ]
-        }
+        
+        music_idx = 0
+        
+        # Loop to fill the hour
+        # Structure: Music -> Music -> Music -> Voice Intro -> Music
+        
+        script_intros = package["song_intros"]
 
+        # Block 1 (3 songs)
+        for _ in range(3):
+            if music_idx < len(music_tracks):
+                playlist_tracks.append(music_tracks[music_idx])
+                music_idx += 1
 
-# Convenience function
-def get_scheduler() -> BroadcastScheduler:
-    """Get a configured broadcast scheduler."""
-    return BroadcastScheduler()
+        # -- News Brief --
+        track = self._create_voice_track(package["news_brief"], "News Update")
+        if track: playlist_tracks.append(track)
+
+        # -- Block 2 (Music with intros) --
+        for i in range(3):
+            if music_idx < len(music_tracks):
+                song = music_tracks[music_idx]
+
+                # Insert Intro if available
+                if i < len(script_intros):
+                    # We need to regenerate intro specifically for THIS song to be accurate
+                    # The package gives generic ones, but let's try to be specific
+                    intro_text = self.engine_morning.generate_song_intro(
+                        ContentContext(weather=weather_data, next_track=song.title, time_of_day=time_of_day)
+                    )
+                    intro = self._create_voice_track(intro_text, f"Intro: {song.title}")
+                    if intro: playlist_tracks.append(intro)
+
+                playlist_tracks.append(song)
+                music_idx += 1
+
+        # -- Ad Break --
+        track = self._create_voice_track(package["ad_lead_in"], "Ad Break Lead-in")
+        if track: playlist_tracks.append(track)
+
+        # (Insert Ad Placeholder)
+        playlist_tracks.append(TrackMetadata("/ads/dummy_ad.mp3", "Sponsor Message", "Sponsor", duration_seconds=30))
+
+        track = self._create_voice_track(package["ad_lead_out"], "Ad Break Lead-out")
+        if track: playlist_tracks.append(track)
+
+        # -- Remaining Music --
+        while music_idx < len(music_tracks) and music_idx < 12: # Limit to ~12 songs/hr
+            playlist_tracks.append(music_tracks[music_idx])
+            music_idx += 1
+
+        # 4. Export
+        filename = f"hour_{hour:02d}.m3u"
+        output_path = os.path.join(output_dir, filename)
+        PlaylistManager.export_m3u(playlist_tracks, output_path)
+
+        return output_path
+
+    def generate_daily_schedule(self, output_dir: str):
+        """Generate 24 playlists for the day."""
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        generated_files = []
+        for hour in range(24):
+            path = self.generate_hour_block(hour, output_dir)
+            generated_files.append(path)
+
+        logger.info(f"Daily schedule generated in {output_dir}")
+        return generated_files

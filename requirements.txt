@@ -6,10 +6,7 @@ python-dotenv
 supabase
 elevenlabs
 requests
-<<<<<<< HEAD
 httpx
-=======
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833

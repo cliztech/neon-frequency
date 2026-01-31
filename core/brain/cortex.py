@@ -13,12 +13,7 @@ from langgraph.graph import StateGraph, END
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- IMPORTS ---
-<<<<<<< HEAD
-# --- IMPORTS ---
-from skills import TrendWatcher
-=======
-from skills import TrendWatcher, WeatherStation, GoogleWorkspace
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
+from skills import TrendWatcher, GoogleWorkspace
 from greg import GregPersona
 from content_engine import ContentEngine, ContentContext, ShowProducer
 from radio_automation import AzuraCastClient, PlaylistOptimizer, Track
@@ -42,9 +37,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - AEN - %(message)s'
 logger = logging.getLogger("AEN.Cortex")
 
 trend_watcher = TrendWatcher()
-<<<<<<< HEAD
 content_engine = ContentEngine()
 show_producer = ShowProducer(content_engine)
+workspace_skill = GoogleWorkspace()
 
 # Initialize Real Clients
 weather_client = WeatherClient()
@@ -72,10 +67,6 @@ def get_azuracast():
         except Exception as e:
             logger.warning(f"AzuraCast init failed: {e}")
     return azuracast
-=======
-greg_agent = GregPersona()
-workspace_skill = GoogleWorkspace()
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
 
 class RadioState(TypedDict):
     current_track: str
@@ -84,14 +75,10 @@ class RadioState(TypedDict):
     mood: str
     news_headline: str  # Added news
     history: List[str]
-<<<<<<< HEAD
     greg_interruption: str
     voice_script: str  # Generated DJ script
     voice_audio_path: Optional[str]  # Path to generated audio
-=======
-    greg_interruption: str  # New field for Greg's roast
     schedule: str
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
 
 # --- NODES ---
 
@@ -108,12 +95,8 @@ async def monitor_deck(state: RadioState):
             logging.info(f"Now Playing (AzuraCast): {state['current_track']}")
     
     # Update Context
-<<<<<<< HEAD
     state["weather"] = weather_client.get_weather()
-=======
-    state["weather"] = WeatherStation.get_weather()
     state["schedule"] = workspace_skill.get_schedule()
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
     trend = trend_watcher.get_current_trends()
     state["mood"] = f"Hype ({trend})"
     
@@ -144,14 +127,13 @@ async def generate_host_script(state: RadioState):
     else:
         state["greg_interruption"] = ""
 
-<<<<<<< HEAD
     # Use Content Engine for AI-powered script generation
     # We pass the news headline into the mood or context
     context = ContentContext(
         weather=state["weather"],
         current_track=state.get("current_track"),
         next_track=state["next_track"],
-        mood=f"{state['mood']} | News: {state['news_headline']}"
+        mood=f"{state['mood']} | News: {state['news_headline']} | Schedule: {state['schedule']}"
     )
     
     script = content_engine.generate_song_intro(context)
@@ -160,7 +142,8 @@ async def generate_host_script(state: RadioState):
     
     # Generate voice audio using ElevenLabs
     try:
-        audio_path = f"/tmp/voice_{hash(script)}.mp3"
+        cache_dir = os.getenv("AUDIO_CACHE_DIR", "/tmp")
+        audio_path = os.path.join(cache_dir, f"voice_{hash(script)}.mp3")
         audio = voice_client.generate(script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path
@@ -171,18 +154,6 @@ async def generate_host_script(state: RadioState):
         logging.warning(f"Voice generation failed: {e}")
         state["voice_audio_path"] = None
     
-=======
-    prompt = f"""
-    SYSTEM: You are AEN, host of Neon Frequency.
-    CONTEXT: {state['weather']}. Mood: {state['mood']}.
-    SCHEDULE: {state['schedule']}
-    NEXT SONG: {state['next_track']}
-    TASK: Write a 1-sentence intro.
-    """
-    logging.info("Generating voice script...")
-    script = f"It's {state['weather']} and we are riding the {state['mood']} wave! Coming up: {state['next_track']}."
-    logging.info(f"Script: {script}")
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
     return state
 
 
@@ -191,7 +162,8 @@ async def push_to_deck(state: RadioState):
     try:
         # Connect to Liquidsoap container
         # Note: In a real docker network, hostname might be 'liquidsoap' not localhost
-        reader, writer = await telnetlib3.open_connection('localhost', 1234)
+        host = os.getenv("LIQUIDSOAP_HOST", "localhost")
+        reader, writer = await telnetlib3.open_connection(host, 1234)
         
         # 1. Push Song
         cmd = f"brain_queue.push /music/{state['next_track']}\n"
@@ -238,12 +210,9 @@ async def main():
         "mood": "", 
         "history": [],
         "greg_interruption": "",
-<<<<<<< HEAD
         "voice_script": "",
-        "voice_audio_path": None
-=======
+        "voice_audio_path": None,
         "schedule": ""
->>>>>>> c5e0bba4d188a5a7696a0b63316101e64f1ea833
     })
 
 
