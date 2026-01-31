@@ -19,6 +19,7 @@ from core.brain.weather_client import WeatherClient
 from core.brain.agents.news_agent import NewsAgent
 from core.brain.music_library import MusicLibrary, TrackMetadata, Genre
 from core.brain.playlist_manager import PlaylistManager
+from core.brain.voice_mixer import get_voice_mixer
 
 logger = logging.getLogger("AEN.Scheduler")
 
@@ -163,15 +164,66 @@ class RadioScheduler:
 
                 # Insert Intro if available
                 if i < len(script_intros):
-                    # We need to regenerate intro specifically for THIS song to be accurate
-                    # The package gives generic ones, but let's try to be specific
-                    intro_text = self.engine_morning.generate_song_intro(
-                        ContentContext(weather=weather_data, next_track=song.title, time_of_day=time_of_day)
-                    )
-                    intro = self._create_voice_track(intro_text, f"Intro: {song.title}")
-                    if intro: playlist_tracks.append(intro)
+                    # RAMP AWARENESS LOGIC
+                    ramp_seconds = song.intro_seconds
 
-                playlist_tracks.append(song)
+                    # Simulate ramp for demo purposes if not set (or 0)
+                    if ramp_seconds == 0 and "Demo Track" in song.title:
+                        ramp_seconds = random.uniform(5.0, 15.0)
+
+                    mixed_success = False
+
+                    # Attempt "Voice Over Intro" mixing if we have enough ramp
+                    if ramp_seconds > 5.0:
+                        try:
+                            # 1. Generate Constrained Script
+                            intro_text = self.engine_morning.generate_constrained_intro(
+                                ContentContext(weather=weather_data, next_track=song.title, time_of_day=time_of_day),
+                                max_seconds=ramp_seconds - 1.0  # Leave 1s buffer
+                            )
+
+                            # 2. Generate Voice Audio
+                            voice_track = self._create_voice_track(intro_text, f"Intro: {song.title}")
+
+                            if voice_track:
+                                # 3. Mix
+                                mixer = get_voice_mixer()
+                                # Synchronous call
+                                mixed_path = mixer.mix_over_intro(
+                                    voice_track.file_path,
+                                    song.file_path,
+                                    ramp_seconds
+                                )
+
+                                if mixed_path:
+                                    # Create metadata for the mixed track
+                                    mixed_song = TrackMetadata(
+                                        file_path=mixed_path,
+                                        title=song.title,
+                                        artist=song.artist,
+                                        duration_seconds=song.duration_seconds,
+                                        intro_seconds=0, # Ramp used
+                                        is_generated=True,
+                                        generation_prompt="Voice Over Ramp Mix"
+                                    )
+                                    playlist_tracks.append(mixed_song)
+                                    mixed_success = True
+                        except Exception as e:
+                            logger.error(f"Ramp mixing failed: {e}")
+
+                    if not mixed_success:
+                        # Fallback: Stop Set (Voice then Song)
+                        # We need to regenerate intro specifically for THIS song to be accurate
+                        intro_text = self.engine_morning.generate_song_intro(
+                            ContentContext(weather=weather_data, next_track=song.title, time_of_day=time_of_day)
+                        )
+                        intro = self._create_voice_track(intro_text, f"Intro: {song.title}")
+                        if intro: playlist_tracks.append(intro)
+                        playlist_tracks.append(song)
+
+                else:
+                    playlist_tracks.append(song)
+
                 music_idx += 1
 
         # -- Ad Break --

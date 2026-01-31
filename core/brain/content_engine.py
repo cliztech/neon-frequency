@@ -223,6 +223,38 @@ Write 1-2 sentences only. Be energetic and engaging."""
         ]
         return random.choice(templates)
     
+    def generate_constrained_intro(self, context: ContentContext, max_seconds: float) -> str:
+        """Generate an intro that fits within a specific time limit."""
+        # Estimate words: 150 wpm = 2.5 words/sec
+        max_words = int(max_seconds * 2.5)
+
+        prompt = f"""Generate a song intro for "{context.next_track or 'this track'}".
+
+        Constraints:
+        - MUST be under {max_seconds} seconds when spoken.
+        - Maximum {max_words} words.
+        - High energy.
+        - Talk about the artist or song title.
+
+        Context:
+        Weather: {context.weather}
+        Time: {context.time_of_day}
+        """
+
+        result = self._generate_with_llm(prompt, self.personality.get_system_prompt())
+
+        if result:
+            return result
+
+        # Fallback templates
+        templates = [
+            f"Here is {context.next_track}!",
+            f"New sound: {context.next_track}.",
+            f"Turn it up for {context.next_track}!",
+            f"Incoming: {context.next_track}."
+        ]
+        return random.choice(templates)
+
     def generate_weather_report(self, weather_data: str, location: str = "Rowville") -> str:
         """Generate a weather report with DJ personality."""
         prompt = f"""Generate a quick weather update for the radio.
