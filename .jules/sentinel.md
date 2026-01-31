@@ -7,3 +7,8 @@
 **Vulnerability:** GitGuardian flagged `:-******` defaults in `docker-compose.yml` as exposed secrets.
 **Learning:** Even if used as a fallback for development, hardcoding a known weak password in infrastructure code (IaC) triggers security scanners and presents a risk if the environment variable is accidentally omitted in production.
 **Prevention:** Do not provide default values for secrets in IaC. Force the deployment environment to explicitly provide them (fail secure).
+
+## 2026-01-31 - Telnet Protocol Command Injection
+**Vulnerability:** Unsanitized user/state input was interpolated directly into a Telnet command string.
+**Learning:** Text-based protocols like Telnet are vulnerable to "newline injection" (similar to SQLi or HTTP header injection) where control characters can execute unintended commands.
+**Prevention:** Always sanitize input intended for text-based protocols by stripping control characters (especially `\n` and `\r`).
