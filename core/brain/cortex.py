@@ -174,7 +174,12 @@ async def push_to_deck(state: RadioState):
         reader, writer = await telnetlib3.open_connection(host, 1234)
         
         # 1. Push Song
-        cmd = f"brain_queue.push /music/{state['next_track']}\n"
+        # Sanitize track name to prevent command injection
+        clean_track = state['next_track'].replace('\n', '').replace('\r', '')
+        if clean_track != state['next_track']:
+            logging.warning(f"Sanitized track name containing newlines: {state['next_track']!r} -> {clean_track!r}")
+
+        cmd = f"brain_queue.push /music/{clean_track}\n"
         writer.write(cmd)
         
         # 2. Push Greg (if active) - This requires a text-to-speech engine to generate the audio file first
