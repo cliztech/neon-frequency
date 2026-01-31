@@ -1,7 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import ast
 import os
-from typing import List, Dict, Any
+from typing import Dict, Any, Iterable
 
 @dataclass
 class CodeChemist:
@@ -54,21 +54,29 @@ class CodeChemist:
             "issues": issues
         }
 
-    def scan_codebase(self, root_dir: str) -> Dict[str, Any]:
+    def scan_codebase(
+        self,
+        root_dir: str,
+        exclude_dirs: Iterable[str] | None = None,
+    ) -> Dict[str, Any]:
         """Scans python files in the directory for issues."""
-        results = {}
+        results: Dict[str, Any] = {}
         total_score = 0
         file_count = 0
-        
-        for root, _, files in os.walk(root_dir):
+        ignored = set(exclude_dirs or ())
+        ignored.update({".git", "__pycache__", "node_modules", "venv", ".venv"})
+
+        for root, dirs, files in os.walk(root_dir):
+            dirs[:] = [d for d in dirs if d not in ignored]
             for file in files:
                 if file.endswith(".py"):
                     full_path = os.path.join(root, file)
                     review = self.review_file(full_path)
-                    results[file] = review
+                    relative_path = os.path.relpath(full_path, root_dir)
+                    results[relative_path] = review
                     total_score += review.get("score", 0)
                     file_count += 1
-        
+
         avg_score = total_score / file_count if file_count > 0 else 0
         return {
             "average_code_health": avg_score,
