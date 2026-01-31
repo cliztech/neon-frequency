@@ -1,0 +1,22 @@
+
+> neon-studio@0.1.0 dev /app/studio
+> vite --port 5173
+
+node:internal/modules/esm/resolve:274
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/studio/node_modules/vite/dist/node/chunks/chunk.js' imported from /app/studio/node_modules/vite/dist/node/cli.js
+    at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+    at moduleResolve (node:internal/modules/esm/resolve:859:10)
+    at defaultResolve (node:internal/modules/esm/resolve:983:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:731:20)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:310:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///app/studio/node_modules/vite/dist/node/chunks/chunk.js'
+}
+
+Node.js v22.22.0
+ ELIFECYCLE  Command failed with exit code 1.

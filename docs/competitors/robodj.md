@@ -25,3 +25,13 @@
 - **Interface:** Module-based settings (weather, voices, prompts).
 - **Workflow:** Background "set it and forget it" operation that monitors the automation log/output.
 - **Customization:** Prompt Doctor tool to refine AI scripts before airing.
+# RoboDJ (RadioDJ Dude Studio)
+
+## Source URLs
+- https://studio.radiodjdude.com/robodj/
+
+## Feature list
+- Unable to capture features: network proxy blocked access (HTTP 403 from proxy).
+
+## Notes
+- Please provide screenshots or PDFs of the RoboDJ page and any linked manuals/pricing pages so I can extract the feature list.
