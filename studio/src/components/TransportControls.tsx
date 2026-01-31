@@ -19,7 +19,9 @@ export default function TransportControls() {
             <div className="flex gap-2">
                 <button
                     onClick={togglePlay}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlaying
+                    aria-label={isPlaying ? 'Stop playback' : 'Start playback'}
+                    title={isPlaying ? 'Stop' : 'Play'}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:outline-none ${isPlaying
                             ? 'bg-neon-pink text-white shadow-[0_0_15px_#ff00ff]'
                             : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
                         }`}
@@ -27,11 +29,19 @@ export default function TransportControls() {
                     {isPlaying ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
                 </button>
 
-                <button className="w-10 h-10 rounded-full bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center">
+                <button
+                    aria-label="Rewind"
+                    title="Rewind"
+                    className="w-10 h-10 rounded-full bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:outline-none"
+                >
                     <Rewind className="w-4 h-4" />
                 </button>
 
-                <button className="w-10 h-10 rounded-full bg-zinc-800 text-zinc-400 hover:text-neon-cyan hover:shadow-[0_0_10px_#00f3ff] flex items-center justify-center">
+                <button
+                    aria-label="Toggle repeat"
+                    title="Toggle repeat"
+                    className="w-10 h-10 rounded-full bg-zinc-800 text-zinc-400 hover:text-neon-cyan hover:shadow-[0_0_10px_#00f3ff] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:outline-none"
+                >
                     <Repeat className="w-4 h-4" />
                 </button>
             </div>
