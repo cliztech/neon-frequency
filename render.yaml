@@ -1,0 +1,17 @@
+previews:
+  generation: automatic
+
+services:
+  - type: web
+    runtime: static
+    name: neon-studio
+    rootDir: studio
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+  - type: web
+    runtime: static
+    name: neon-web-client
+    rootDir: visuals/web-client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
