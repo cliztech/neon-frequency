@@ -48,3 +48,6 @@ services:
 
 networks:
   radio-net:
+
+volumes:
+  audio_cache:
