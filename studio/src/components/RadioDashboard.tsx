@@ -104,6 +104,94 @@ const voicePresets = [
     },
 ];
 
+const voiceSelections = [
+    {
+        slot: 'Voice A',
+        name: 'Nova Vale',
+        role: 'Primary Host',
+        tone: 'Warm Alto / Velvet',
+        accent: 'cyan',
+    },
+    {
+        slot: 'Voice B',
+        name: 'Axel Rift',
+        role: 'Interview Agent',
+        tone: 'Midrange / Crisp',
+        accent: 'emerald',
+    },
+];
+
+const scriptModes = [
+    {
+        name: 'Banter',
+        detail: 'Rapid-fire setup, punchlines, and playful callouts.',
+        status: 'Pinned',
+        selected: true,
+    },
+    {
+        name: 'Interview',
+        detail: 'Guided Q&A with structured voice handoffs.',
+        status: 'Ready',
+    },
+    {
+        name: 'Dual-Announce',
+        detail: 'Co-hosted announcements and synchronized reads.',
+        status: 'Draft',
+    },
+];
+
+const handoffRules = [
+    {
+        title: 'Warm handoff',
+        detail: '2-sec overlap with soft fade.',
+    },
+    {
+        title: 'Alternate leads',
+        detail: 'Swap primary voice every segment.',
+    },
+    {
+        title: 'Anchor outro',
+        detail: 'Voice A closes with sponsor tag.',
+    },
+];
+
+const timelinePreview = [
+    {
+        time: '00:00',
+        segment: 'Cold open + audience tease',
+        speaker: 'Nova Vale',
+        length: '00:45',
+        progress: '22%',
+        accent: 'cyan',
+        handoff: 'Solo',
+    },
+    {
+        time: '00:45',
+        segment: 'Topic primer + hype cues',
+        speaker: 'Axel Rift',
+        length: '01:10',
+        progress: '34%',
+        accent: 'emerald',
+        handoff: 'Soft swap',
+    },
+    {
+        time: '01:55',
+        segment: 'Dual-announce sponsor tag',
+        speaker: 'Nova + Axel',
+        length: '00:30',
+        progress: '15%',
+        accent: 'violet',
+        handoff: 'Dual',
+    },
+    {
+        time: '02:25',
+        segment: 'Listener voicemail + follow-up',
+        speaker: 'Nova Vale',
+        length: '01:05',
+        progress: '29%',
+        accent: 'cyan',
+        handoff: 'Anchor',
+    },
 const v2FeatureHighlights = [
     {
         title: 'Dual Marker Mode',
@@ -213,6 +301,13 @@ const accentStyles: Record<string, string> = {
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
     violet: 'from-violet-400/20 to-violet-500/5 border-violet-400/30',
     fuchsia: 'from-fuchsia-400/20 to-fuchsia-500/5 border-fuchsia-400/30',
+};
+
+const accentDots: Record<string, string> = {
+    cyan: 'bg-cyan-400',
+    emerald: 'bg-emerald-400',
+    violet: 'bg-violet-400',
+    fuchsia: 'bg-fuchsia-400',
 };
 
 const StatusBadge = ({ label }: { label: string }) => {
@@ -384,6 +479,156 @@ const RadioDashboard = () => {
                         </div>
                     </Panel>
 
+                    <Panel
+                        title="Multi-Voice Scripts"
+                        subtitle="Select two voices, set a script mode, and preview the handoff timeline."
+                    >
+                        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                            <div className="space-y-4">
+                                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Voice pairing</p>
+                                        <button
+                                            type="button"
+                                            className="text-[11px] uppercase tracking-[0.3em] text-cyan-200 border border-cyan-400/40 px-3 py-1 rounded-full"
+                                        >
+                                            Swap voices
+                                        </button>
+                                    </div>
+                                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                        {voiceSelections.map((voice) => (
+                                            <div key={voice.slot} className="space-y-3">
+                                                <label className="text-[11px] uppercase tracking-[0.3em] text-zinc-300">
+                                                    {voice.slot}
+                                                </label>
+                                                <select
+                                                    defaultValue={voice.name}
+                                                    aria-label={`${voice.slot} selection`}
+                                                    className="w-full rounded-xl border border-white/10 bg-zinc-950/70 px-3 py-2 text-sm text-zinc-200"
+                                                >
+                                                    {agents.map((agent) => (
+                                                        <option key={agent.name} value={agent.name}>
+                                                            {agent.name} · {agent.role}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div
+                                                    className={`rounded-xl border bg-gradient-to-br p-3 ${accentStyles[voice.accent]}`}
+                                                >
+                                                    <p className="text-sm font-semibold">{voice.name}</p>
+                                                    <p className="text-xs text-zinc-300">{voice.role}</p>
+                                                    <p className="text-xs text-zinc-400 mt-2">{voice.tone}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Script mode</p>
+                                        <span className="text-[11px] uppercase tracking-[0.3em] text-zinc-400">
+                                            Scene 04
+                                        </span>
+                                    </div>
+                                    <div className="mt-3 space-y-3">
+                                        {scriptModes.map((mode) => (
+                                            <label
+                                                key={mode.name}
+                                                className={`flex items-start justify-between gap-4 rounded-xl border p-3 cursor-pointer transition ${
+                                                    mode.selected
+                                                        ? 'border-cyan-400/60 bg-cyan-500/10'
+                                                        : 'border-white/10 bg-zinc-950/70 hover:border-cyan-400/40'
+                                                }`}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <input
+                                                        type="radio"
+                                                        name="script-mode"
+                                                        defaultChecked={mode.selected}
+                                                        className="mt-1 accent-cyan-400"
+                                                    />
+                                                    <div>
+                                                        <p className="text-sm font-semibold">{mode.name}</p>
+                                                        <p className="text-xs text-zinc-400 mt-1">{mode.detail}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[11px] uppercase tracking-[0.3em] text-cyan-200 border border-cyan-400/40 px-2 py-1 rounded-full">
+                                                    {mode.status}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 grid gap-2 text-[11px] text-zinc-400">
+                                        {handoffRules.map((rule) => (
+                                            <div
+                                                key={rule.title}
+                                                className="flex items-center justify-between rounded-full border border-white/10 px-3 py-2"
+                                            >
+                                                <span className="text-zinc-200">{rule.title}</span>
+                                                <span className="text-zinc-500">{rule.detail}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-400">Timeline preview</p>
+                                    <span className="text-[11px] uppercase tracking-[0.3em] text-zinc-300">
+                                        3:30 total
+                                    </span>
+                                </div>
+                                <div className="mt-4 space-y-3">
+                                    {timelinePreview.map((entry) => (
+                                        <div
+                                            key={`${entry.time}-${entry.segment}`}
+                                            className="flex items-start gap-3 rounded-xl border border-white/10 bg-zinc-950/70 p-3"
+                                        >
+                                            <div className="mt-1 flex flex-col items-center">
+                                                <span
+                                                    className={`h-2.5 w-2.5 rounded-full ${
+                                                        accentDots[entry.accent] ?? 'bg-white/50'
+                                                    }`}
+                                                />
+                                                <span className="mt-2 text-[11px] text-zinc-400">{entry.time}</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-semibold">{entry.segment}</p>
+                                                <p className="text-xs text-zinc-400 mt-1">
+                                                    {entry.speaker} · {entry.length}
+                                                </p>
+                                                <div className="mt-2 inline-flex items-center gap-2 text-[11px] text-zinc-400">
+                                                    <span className="px-2 py-0.5 rounded-full border border-white/10">
+                                                        {entry.handoff}
+                                                    </span>
+                                                    <span className="uppercase tracking-[0.3em] text-zinc-500">
+                                                        Handoff
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 h-1.5 w-full rounded-full bg-white/5">
+                                                    <div
+                                                        className="h-1.5 rounded-full bg-cyan-400/70"
+                                                        style={{ width: entry.progress }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-zinc-400">
+                                    <span className="px-3 py-2 border border-white/10 rounded-full">
+                                        Generate alt takes
+                                    </span>
+                                    <span className="px-3 py-2 border border-white/10 rounded-full">
+                                        Sync with cues
+                                    </span>
+                                    <span className="px-3 py-2 border border-white/10 rounded-full">
+                                        Export rundown
+                                    </span>
+                                </div>
+                            </div>
                     <Panel title="Benefits Dashboard" subtitle="Why broadcasters use RoboDJ instead of generic scripts.">
                         <div className="grid grid-cols-3 gap-4">
                             {benefitPillars.map((pillar) => (
