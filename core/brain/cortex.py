@@ -1,5 +1,6 @@
 print("DEBUG: STARTING CORTEX...")
 import asyncio
+import hashlib
 import telnetlib3
 import logging
 import os
@@ -119,7 +120,9 @@ async def select_track(state: RadioState):
     """The Crate Digger."""
     # Logic: Prefer Happy Hardcore, avoid repeats
     candidates = ["happy_hardcore_anthem.mp3", "trance_uplift.mp3", "cheeky_prints_jingle.mp3"]
-    selection = random.choice(candidates)
+    recent = set(state.get("history", []))
+    available = [track for track in candidates if track not in recent]
+    selection = random.choice(available or candidates)
     
     state["next_track"] = selection
     logging.info(f"Selected Track: {selection}")
@@ -151,7 +154,8 @@ async def generate_host_script(state: RadioState):
     # Generate voice audio using ElevenLabs
     try:
         cache_dir = os.getenv("AUDIO_CACHE_DIR", "/tmp")
-        audio_path = os.path.join(cache_dir, f"voice_{hash(script)}.mp3")
+        script_hash = hashlib.sha256(script.encode("utf-8")).hexdigest()
+        audio_path = os.path.join(cache_dir, f"voice_{script_hash}.mp3")
         audio = await asyncio.to_thread(voice_client.generate, script, output_path=audio_path)
         if audio:
             state["voice_audio_path"] = audio_path
@@ -171,7 +175,10 @@ async def push_to_deck(state: RadioState):
         # Connect to Liquidsoap container
         # Note: In a real docker network, hostname might be 'liquidsoap' not localhost
         host = os.getenv("LIQUIDSOAP_HOST", "localhost")
-        reader, writer = await telnetlib3.open_connection(host, 1234)
+        reader, writer = await asyncio.wait_for(
+            telnetlib3.open_connection(host, 1234),
+            timeout=5,
+        )
         
         # 1. Push Song
         # Sanitize track name to prevent command injection
@@ -190,6 +197,7 @@ async def push_to_deck(state: RadioState):
         await writer.drain()
         logging.info(f"Queue Command Sent: {cmd.strip()}")
         writer.close()
+        await writer.wait_closed()
     except Exception as e:
         logging.warning(f"Deck connection failed (is Docker running?): {e}")
         
@@ -221,6 +229,7 @@ async def main():
         "next_track": "", 
         "weather": "", 
         "mood": "", 
+        "news_headline": "",
         "history": [],
         "greg_interruption": "",
         "voice_script": "",
