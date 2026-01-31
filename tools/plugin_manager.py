@@ -59,29 +59,41 @@ def install_plugin(plugin_name, is_external=False):
     manifest = fetch_file(manifest_url)
     
     if not manifest:
-        # For 3rd party, maybe plugin.json is at root?
-        if custom_url:
-             manifest_url_root = f"{base_url}/plugin.json"
-             manifest = fetch_file(manifest_url_root)
-             if manifest:
-                 logger.info("   Found manifest at root.")
-             else:
-                 logger.error(f"❌ Plugin manifest not found at {manifest_url} or {manifest_url_root}")
-                 return False
-        # If checked internal and failed, try external automatically
-        elif not is_external:
-             logger.info(f"   Not found in Internal. Checking External...")
-             return install_plugin(plugin_name, is_external=True)
+        # Try root manifest for official plugins too (fallback)
+        manifest_url_root = f"{base_url}/plugin.json"
+        manifest = fetch_file(manifest_url_root)
+        
+        if manifest:
+             logger.info("   Found manifest at root.")
         else:
-            logger.error(f"❌ Plugin '{plugin_name}' not found.")
-            return False
+            # If checked internal and failed, try external automatically
+            if not is_external and not custom_url:
+                 logger.info(f"   Not found in Internal. Checking External...")
+                 return install_plugin(plugin_name, is_external=True)
+            else:
+                logger.error(f"❌ Plugin manifest not found at {manifest_url} or {manifest_url_root}")
+                return False
 
     logger.info(f"✅ Found '{target_name}'. Installing...")
     
     # 1. README
-    readme = fetch_file(f"{base_url}/README.md")
+    readme_candidates = [
+        f"{base_url}/README.md",
+        f"{base_url}/readme.md",
+        f"{base_url}/.claude-plugin/README.md",
+        f"{base_url}/.claude-plugin/readme.md"
+    ]
+    
+    readme = None
+    for url in readme_candidates:
+        readme = fetch_file(url)
+        if readme:
+            break
+            
     if readme:
         save_file(f"skills/docs/{target_name}_README.md", readme)
+    else:
+        logger.warning(f"⚠️ README not found for {target_name}")
 
     # 2. Manifest
     save_file(f"skills/plugins/{target_name}/plugin.json", manifest)
