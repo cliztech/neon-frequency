@@ -102,6 +102,24 @@ const voicePresets = [
     },
 ];
 
+const audioProcessing = [
+    {
+        name: 'Loudness Normalization',
+        detail: 'Broadcast-Ready Sound',
+        enabled: true,
+    },
+    {
+        name: 'Silence Removal',
+        detail: 'Silence Remover',
+        enabled: true,
+    },
+    {
+        name: 'Compression Presets',
+        detail: 'Adaptive leveling for any segment.',
+        enabled: false,
+    },
+];
+
 const accentStyles: Record<string, string> = {
     cyan: 'from-cyan-400/20 to-cyan-500/5 border-cyan-400/30',
     emerald: 'from-emerald-400/20 to-emerald-500/5 border-emerald-400/30',
@@ -127,6 +145,25 @@ const StatusBadge = ({ label }: { label: string }) => {
         </span>
     );
 };
+
+const ToggleSwitch = ({ enabled, label }: { enabled: boolean; label: string }) => (
+    <button
+        type="button"
+        aria-pressed={enabled}
+        aria-label={label}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full border transition ${
+            enabled
+                ? 'border-cyan-400/50 bg-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.35)]'
+                : 'border-white/15 bg-white/5'
+        }`}
+    >
+        <span
+            className={`inline-flex h-4 w-4 transform rounded-full bg-white transition ${
+                enabled ? 'translate-x-5 bg-cyan-100' : 'translate-x-1'
+            }`}
+        />
+    </button>
+);
 
 const Panel = ({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) => (
     <section className="rounded-2xl border border-white/10 bg-zinc-950/70 backdrop-blur-xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.35)]">
@@ -274,6 +311,30 @@ const RadioDashboard = () => {
                                     </p>
                                     <p className="text-xs text-zinc-400 mt-1">{agent.persona}</p>
                                 </div>
+                            ))}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Audio Processing" subtitle="Polish every segment before it hits the air.">
+                        <div className="space-y-4">
+                            {audioProcessing.map((item) => (
+                                <div
+                                    key={item.name}
+                                    className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-3"
+                                >
+                                    <div>
+                                        <p className="text-sm font-semibold">{item.name}</p>
+                                        <p className="text-xs text-zinc-400 mt-1">{item.detail}</p>
+                                    </div>
+                                    <ToggleSwitch enabled={item.enabled} label={item.name} />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.3em] text-cyan-200">
+                            {['Podcast Tight', 'Studio Warm', 'Festival Punch'].map((preset) => (
+                                <span key={preset} className="rounded-full border border-cyan-400/30 px-3 py-1">
+                                    {preset}
+                                </span>
                             ))}
                         </div>
                     </Panel>
