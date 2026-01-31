@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import os
+import requests  # Import requests to patch it
 from core.brain.skills import WeatherStation
 
 class TestWeatherStation(unittest.TestCase):
 
-    @patch('core.brain.skills.requests.get')
+    @patch('requests.get')
     @patch('core.brain.skills.os.getenv')
     def test_get_weather_success(self, mock_getenv, mock_requests_get):
         # Mock API Key
@@ -42,7 +43,7 @@ class TestWeatherStation(unittest.TestCase):
         self.assertIsInstance(weather, str)
         self.assertIn("°C, ", weather)
 
-    @patch('core.brain.skills.requests.get')
+    @patch('requests.get')
     @patch('core.brain.skills.os.getenv')
     def test_get_weather_api_failure(self, mock_getenv, mock_requests_get):
         # Mock API Key
